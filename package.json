@@ -1,0 +1,6 @@
+{
+  "name": "miami-dade-intel",
+  "private": true,
+  "workspaces": ["dashboard", "scrapers"],
+  "engines": { "node": ">=20.0.0" }
+}
