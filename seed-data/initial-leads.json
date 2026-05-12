@@ -1,0 +1,44 @@
+{
+  "leads": [
+    {
+      "id": "seed-1",
+      "folio": "0131240770190",
+      "type": "Tax Deed Auction",
+      "propertyAddress": "3470 NE 1ST AVE #1208",
+      "propertyCity": "MIAMI",
+      "propertyZip": "33137",
+      "owner": "ESTATE OF JANE DOE",
+      "score": 75,
+      "flags": ["EST OF"],
+      "mlsStatus": "Off-Market",
+      "auctionDate": "2026-06-15",
+      "finalJudgment": 185000
+    },
+    {
+      "id": "seed-2",
+      "folio": "0131150180490",
+      "type": "Foreclosure",
+      "propertyAddress": "1450 SW 22ND ST",
+      "propertyCity": "MIAMI",
+      "propertyZip": "33145",
+      "owner": "JOHN SMITH",
+      "score": 62,
+      "flags": [],
+      "mlsStatus": "Off-Market",
+      "auctionDate": "2026-07-02",
+      "finalJudgment": 245000
+    },
+    {
+      "id": "seed-3",
+      "folio": "3059080140220",
+      "type": "Probate",
+      "propertyAddress": "8855 SW 152ND AVE",
+      "propertyCity": "MIAMI",
+      "propertyZip": "33196",
+      "owner": "ESTATE OF ROBERT WILLIAMS",
+      "score": 88,
+      "flags": ["EST OF", "POSS PI"],
+      "mlsStatus": "Off-Market"
+    }
+  ]
+}
