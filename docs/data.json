@@ -52,6 +52,16 @@
       "propertyAddress": "TEST FROM DROPLET",
       "score": 99,
       "mlsStatus": "Off-Market"
+    },
+    {
+      "id": "test-droplet-2",
+      "folio": "0131240999999",
+      "type": "Tax Deed Auction",
+      "propertyAddress": "TEST FROM DROPLET (REAL FOLIO)",
+      "propertyCity": "MIAMI",
+      "propertyZip": "33137",
+      "score": 99,
+      "mlsStatus": "Off-Market"
     }
   ]
 }
