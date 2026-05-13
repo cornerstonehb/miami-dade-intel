@@ -9,7 +9,9 @@
       "propertyZip": "33137",
       "owner": "ESTATE OF JANE DOE",
       "score": 75,
-      "flags": ["EST OF"],
+      "flags": [
+        "EST OF"
+      ],
       "mlsStatus": "Off-Market",
       "auctionDate": "2026-06-15",
       "finalJudgment": 185000
@@ -37,7 +39,18 @@
       "propertyZip": "33196",
       "owner": "ESTATE OF ROBERT WILLIAMS",
       "score": 88,
-      "flags": ["EST OF", "POSS PI"],
+      "flags": [
+        "EST OF",
+        "POSS PI"
+      ],
+      "mlsStatus": "Off-Market"
+    },
+    {
+      "id": "test-droplet-1",
+      "folio": "9999999999999",
+      "type": "Tax Deed Auction",
+      "propertyAddress": "TEST FROM DROPLET",
+      "score": 99,
       "mlsStatus": "Off-Market"
     }
   ]
