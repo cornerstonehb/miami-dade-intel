@@ -3923,7 +3923,17 @@ export default function MiamiDadePropertyIntel() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d && Array.isArray(d.leads) && d.leads.length > 0) {
-          setAllLeads(d.leads);
+          // Defensive normalization: ensure every lead has the array fields
+          // the dashboard expects, defaulting to empty arrays if missing.
+          // One fix point, multiple safety nets — prevents crashes on
+          // partial data from scrapers or imports.
+          const normalized = d.leads.map((lead) => ({
+            ...lead,
+            flags: Array.isArray(lead.flags) ? lead.flags : [],
+            paTags: Array.isArray(lead.paTags) ? lead.paTags : [],
+            conditionTags: Array.isArray(lead.conditionTags) ? lead.conditionTags : [],
+          }));
+          setAllLeads(normalized);
         }
       })
       .catch(() => {});
