@@ -4086,12 +4086,21 @@ export default function MiamiDadePropertyIntel() {
           // the dashboard expects, defaulting to empty arrays if missing.
           // One fix point, multiple safety nets — prevents crashes on
           // partial data from scrapers or imports.
-          const normalized = d.leads.map((lead) => ({
-            ...lead,
-            flags: Array.isArray(lead.flags) ? lead.flags : [],
-            paTags: Array.isArray(lead.paTags) ? lead.paTags : [],
-            conditionTags: Array.isArray(lead.conditionTags) ? lead.conditionTags : [],
-          }));
+          const normalized = d.leads.map((lead) => {
+            // Step 2: convert legacy shape (type, estateTag, probateStatus) to
+            // new shape (listTypes, liens, previousListTypes). Idempotent —
+            // already-new-shape leads pass through unchanged.
+            const shaped = legacyToNewShape(lead);
+            return {
+              ...shaped,
+              flags: Array.isArray(shaped.flags) ? shaped.flags : [],
+              paTags: Array.isArray(shaped.paTags) ? shaped.paTags : [],
+              conditionTags: Array.isArray(shaped.conditionTags) ? shaped.conditionTags : [],
+              listTypes: Array.isArray(shaped.listTypes) ? shaped.listTypes : [],
+              previousListTypes: Array.isArray(shaped.previousListTypes) ? shaped.previousListTypes : [],
+              liens: Array.isArray(shaped.liens) ? shaped.liens : [],
+            };
+          });
           setAllLeads(normalized);
         }
       })
