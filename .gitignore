@@ -1,8 +1,31 @@
+# Node.js dependencies
 node_modules/
-.env
-*.log
-.DS_Store
+
+# Build artifacts
 dashboard/dist/
+
+# Environment files (NEVER commit secrets)
+.env
+.env.*
+*.local
+
+# Logs
+*.log
+
+# Python build/cache
 __pycache__/
 *.pyc
 .venv/
+
+# OS files
+.DS_Store
+
+# IDE settings
+.vscode/
+
+# Editor backups
+*.swp
+*~
+
+# Temporary scratch space for code-block helpers and notes
+scratch/

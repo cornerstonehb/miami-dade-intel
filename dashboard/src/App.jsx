@@ -2946,6 +2946,165 @@ function reclassifyPropertyLien(lead, newAmount) {
   return { ...lead, type: newTier, amount: newAmount };
 }
 
+// ----------------------------------------------------------------------------
+// LIST TYPE TAXONOMY (Step 2 — new shape)
+//
+// The 18 canonical List Type names. Each lead can belong to multiple Lists
+// simultaneously via lead.listTypes[]. Replaces the legacy single-value
+// lead.type model. Stack Count = listTypes.length.
+//
+// Order is the "primary List" priority used when a single display value is
+// needed (badge color, sort key). Ordered by motivation strength — auction-
+// stage signals dominate, scouting signals (D4D) rank last.
+// ----------------------------------------------------------------------------
+const LIST_TYPE_NAMES = [
+  "Tax Deed Auction",
+  "PFC Auction",
+  "Adverse Possession",
+  "Pre-Foreclosure",
+  "Tax Default",
+  "Tax Deed",
+  "Probate",
+  "Inherited PR Deed",
+  "Inherited QCD",
+  "Unlawful Detainer",
+  "Eviction",
+  "Liens",
+  "Deceased",
+  "Deceased w/ 2nd Owner",
+  "Possible Deceased",
+  "LE / REM",
+  "Code Violations",
+  "D4D",
+];
+
+// Priority lookup: lower number = higher priority. Derived from
+// LIST_TYPE_NAMES so the two cannot drift apart.
+const LIST_TYPE_PRIORITY = Object.fromEntries(
+  LIST_TYPE_NAMES.map((name, idx) => [name, idx])
+);
+
+// Legacy lead.estateTag → new Deceased-family List name.
+// estateTag is being retired in favor of explicit Deceased-family List memberships.
+const ESTATE_TAG_TO_LIST_TYPE = {
+  "EST OF": "Deceased",
+  "EST OF 2nd Owner": "Deceased w/ 2nd Owner",
+  "Possible EST OF": "Possible Deceased",
+  "LE / REM": "LE / REM",
+};
+
+// Legacy lead.probateStatus → new Probate sub-status. Three legacy values map
+// to three of the five new sub-statuses. The other two (Inactive, Re-Opened)
+// only appear once the Phase 2.3 Probate scraper produces them.
+const PROBATE_STATUS_TO_SUB_STATUS = {
+  active: "Active",
+  closed: "Closed - Completed",
+  dismissed: "Closed - Dismissed",
+};
+
+// Legacy lien-family lead.type values → record shape for the new per-record
+// lead.liens[] array. The five legacy lien types and "Judgment" all collapse
+// into a single Liens List membership; the type/tier distinction is preserved
+// at the record level.
+const LEGACY_LIEN_TYPE_TO_RECORD = {
+  "Prop Liens <$50K":    { type: "Property Lien",    tier: "<$50K"    },
+  "Prop Liens $50-100K": { type: "Property Lien",    tier: "$50-100K" },
+  "Prop Liens $100K+":   { type: "Property Lien",    tier: "$100K+"   },
+  "Federal Tax Lien":    { type: "Federal Tax Lien", tier: null       },
+  "Other Liens":         { type: "Other Lien",       tier: null       },
+  "Judgment":            { type: "Judgment",         tier: null       },
+};
+const LEGACY_LIEN_TYPES = new Set(Object.keys(LEGACY_LIEN_TYPE_TO_RECORD));
+
+// Simple (non-lien, non-Deceased-family) legacy lead.type values that map
+// 1:1 to a List name. These get a straightforward listTypes membership.
+const SIMPLE_LEGACY_TYPE_TO_LIST_TYPE = {
+  "Tax Deed Auction":   "Tax Deed Auction",
+  "Tax Deed":           "Tax Deed",
+  "PFC Auction":        "PFC Auction",
+  "Pre-Foreclosure":    "Pre-Foreclosure",
+  "Tax Default":        "Tax Default",
+  "Inherited PR Deed":  "Inherited PR Deed",
+  "Inherited QCD":      "Inherited QCD",
+  "Probate":            "Probate",
+  "Adverse Possession": "Adverse Possession",
+};
+
+// Convert a legacy-shape lead to a partially-new lead. Adds listTypes (always),
+// liens (when applicable), previousListTypes (always empty in Step 2).
+// Does NOT remove lead.type, lead.estateTag, lead.probateStatus — those are
+// retired in Sub-edit 2.7 once nothing reads them.
+//
+// Idempotent: calling on an already-converted lead returns it unchanged
+// (detected via existing listTypes array). Safe to call from the fetch
+// normalization, seed flow, and any apply* dual-write paths.
+function legacyToNewShape(lead) {
+  if (!lead) return lead;
+  // Already converted — Sub-edit 2.1 and the seed flow may both touch a lead.
+  if (Array.isArray(lead.listTypes)) return lead;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const listTypes = [];
+  const liens = Array.isArray(lead.liens) ? [...lead.liens] : [];
+
+  // Map lead.type → membership (or Liens membership + record).
+  if (lead.type) {
+    if (SIMPLE_LEGACY_TYPE_TO_LIST_TYPE[lead.type]) {
+      const membership = {
+        name: SIMPLE_LEGACY_TYPE_TO_LIST_TYPE[lead.type],
+        source: "ported-from-type",
+        verifiedAt: today,
+      };
+      // Attach probate sub-status when applicable.
+      if (lead.type === "Probate" && PROBATE_STATUS_TO_SUB_STATUS[lead.probateStatus]) {
+        membership.status = PROBATE_STATUS_TO_SUB_STATUS[lead.probateStatus];
+      }
+      listTypes.push(membership);
+    } else if (LEGACY_LIEN_TYPES.has(lead.type)) {
+      // Liens membership (single, even if multiple records).
+      listTypes.push({
+        name: "Liens",
+        source: "ported-from-type",
+        verifiedAt: today,
+      });
+      // Per-record entry preserving the original type and tier.
+      const record = LEGACY_LIEN_TYPE_TO_RECORD[lead.type];
+      liens.push({
+        type: record.type,
+        tier: record.tier,
+        amount: lead.amount || 0,
+        recordedAt: lead.filed || null,
+        source: "ported-from-type",
+      });
+    }
+    // Unknown lead.type silently produces no listTypes entry — matches
+    // existing dashboard behavior, which already treats unknown types as bugs.
+  }
+
+  // Map lead.estateTag → Deceased-family membership.
+  if (lead.estateTag && ESTATE_TAG_TO_LIST_TYPE[lead.estateTag]) {
+    listTypes.push({
+      name: ESTATE_TAG_TO_LIST_TYPE[lead.estateTag],
+      source: "ported-from-estateTag",
+      verifiedAt: today,
+    });
+  }
+
+  return {
+    ...lead,
+    listTypes,
+    previousListTypes: [],
+    liens,
+  };
+}
+
+// Predicate used at all read sites: does this lead currently belong to the
+// named List? Replaces legacy `lead.type === X` and `lead.estateTag === Y`
+// equality checks throughout the dashboard.
+function hasListType(lead, name) {
+  return Array.isArray(lead?.listTypes) && lead.listTypes.some((lt) => lt.name === name);
+}
+
 // Virtual sidebar rows: lead-type + tag intersections that the user wants
 // available as one-click filters. Each renders under its parent family group
 // and filters to leads matching BOTH conditions.
