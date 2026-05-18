@@ -4068,7 +4068,7 @@ function downloadCsv(rows, filename) {
 // COMPONENT
 // ----------------------------------------------------------------------------
 export default function MiamiDadePropertyIntel() {
-  const [allLeads, setAllLeads] = useState(allLeadsWithEquityApprox);
+  const [allLeads, setAllLeads] = useState(() => allLeadsWithEquityApprox.map(legacyToNewShape));
 
   // ─────────────────────────────────────────────────────────────────────────────
   // LIVE DATA FETCH — replaces seed data with scraped data when available.
@@ -6321,7 +6321,7 @@ export default function MiamiDadePropertyIntel() {
                 return l;
               });
               // Append inserts (new Comp Source leads from MLS imports)
-              return inserts && inserts.length ? [...enriched, ...inserts] : enriched;
+              return inserts && inserts.length ? [...enriched, ...inserts.map(legacyToNewShape)] : enriched;
             });
           }}
           onClose={() => setShowImportModal(false)}
