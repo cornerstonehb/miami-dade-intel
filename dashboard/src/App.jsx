@@ -5684,9 +5684,9 @@ export default function MiamiDadePropertyIntel() {
                           })()}
                         </td>
                         <td className="px-4 py-4 align-top">
-                          <div className="inline-flex items-center gap-1.5 font-bold text-xs" style={{ color: TYPE_COLOR[r.type] || "#475569" }}>
-                            <span className="w-2 h-2 rounded-full" style={{ background: TYPE_COLOR[r.type] || "#475569" }}></span>
-                            {r.type.toUpperCase()}
+                          <div className="inline-flex items-center gap-1.5 font-bold text-xs" style={{ color: TYPE_COLOR[getPrimaryLeadType(r)] || "#475569" }}>
+                            <span className="w-2 h-2 rounded-full" style={{ background: TYPE_COLOR[getPrimaryLeadType(r)] || "#475569" }}></span>
+                            {(getPrimaryLeadType(r) || "—").toUpperCase()}
                           </div>
                         </td>
                         <td className="px-4 py-4 align-top">
