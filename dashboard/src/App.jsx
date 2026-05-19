@@ -5882,7 +5882,7 @@ export default function MiamiDadePropertyIntel() {
                                 ADV POSS
                               </span>
                             )}
-                            {r.estateTag === "EST OF" && (
+                            {hasListType(r, "Deceased") && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#16a34a",
                                 background: "#dcfce7",
@@ -5891,7 +5891,7 @@ export default function MiamiDadePropertyIntel() {
                                 EST OF
                               </span>
                             )}
-                            {r.estateTag === "EST OF 2nd Owner" && (
+                            {hasListType(r, "Deceased w/ 2nd Owner") && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#7c3aed",
                                 background: "#ede9fe",
@@ -5900,7 +5900,7 @@ export default function MiamiDadePropertyIntel() {
                                 EST OF 2ND
                               </span>
                             )}
-                            {r.estateTag === "LE / REM" && (
+                            {hasListType(r, "LE / REM") && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#f59e0b",
                                 background: "#fef3c7",
@@ -5909,7 +5909,7 @@ export default function MiamiDadePropertyIntel() {
                                 LE / REM
                               </span>
                             )}
-                            {r.estateTag === "Possible EST OF" && (
+                            {hasListType(r, "Possible Deceased") && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#0891b2",
                                 background: "#cffafe",
@@ -5918,7 +5918,7 @@ export default function MiamiDadePropertyIntel() {
                                 POSS EST OF
                               </span>
                             )}
-                            {(r.type === "Inherited PR Deed" || r.type === "Inherited QCD") && (
+                            {(hasListType(r, "Inherited PR Deed") || hasListType(r, "Inherited QCD")) && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#0891b2",
                                 background: "#cffafe",
