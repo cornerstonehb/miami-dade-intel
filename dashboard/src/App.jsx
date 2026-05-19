@@ -7393,7 +7393,7 @@ function AuctionDataPanel({ lead, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const ad = lead.auctionData;
   const days = daysUntilAuction(ad?.auctionDate);
-  const isTax = (lead.type === "Tax Default" || lead.type === "Tax Deed");
+  const isTax = (hasListType(lead, "Tax Default") || hasListType(lead, "Tax Deed"));
 
   // No data yet — show empty state with quick-paste CTA
   if (!ad) {
@@ -7581,7 +7581,7 @@ function AuctionEditForm({ lead, onSave, onCancel }) {
   const [caseNum, setCaseNum] = useState(ad.caseNumber || "");
   const [certAmt, setCertAmt] = useState(ad.certificateAmount || "");
   const [source, setSource] = useState(ad.source || "RealForeclose");
-  const isTax = (lead.type === "Tax Default" || lead.type === "Tax Deed");
+  const isTax = (hasListType(lead, "Tax Default") || hasListType(lead, "Tax Deed"));
 
   const handleSave = () => {
     onSave({
