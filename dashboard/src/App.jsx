@@ -3090,6 +3090,15 @@ function legacyToNewShape(lead) {
     });
   }
 
+  // Sort by priority — lowest LIST_TYPE_PRIORITY value (highest priority) first.
+  // Enables getPrimaryLeadType and similar helpers to read listTypes[0] for primary.
+  // Unknown names sort to the end (defensive: future scraper output may include
+  // names not yet added to LIST_TYPE_NAMES).
+  listTypes.sort((a, b) => {
+    const pa = LIST_TYPE_PRIORITY[a.name] ?? Number.MAX_SAFE_INTEGER;
+    const pb = LIST_TYPE_PRIORITY[b.name] ?? Number.MAX_SAFE_INTEGER;
+    return pa - pb;
+  });
   return {
     ...lead,
     listTypes,
@@ -3103,6 +3112,24 @@ function legacyToNewShape(lead) {
 // equality checks throughout the dashboard.
 function hasListType(lead, name) {
   return Array.isArray(lead?.listTypes) && lead.listTypes.some((lt) => lt.name === name);
+}
+
+// Set of LIST_TYPE_NAMES that correspond to legacy LEAD_TYPES with colors.
+// Lists in this Set render in the LEAD TYPE badge and sidebar; Lists NOT in
+// this Set are estate signals (Deceased family, LE/REM), peripheral signals
+// (Code Violations, D4D), or new-taxonomy Lists not yet wired to the legacy UI
+// (Eviction, Unlawful Detainer).
+const LEAD_TYPE_KEYS = new Set(LEAD_TYPES.map((t) => t.key));
+
+// Returns the highest-priority listType.name that's a Lead Type (per LEAD_TYPE_KEYS).
+// Assumes lead.listTypes is priority-sorted (enforced by legacyToNewShape).
+// Returns null if the lead has no Lead Type memberships — caller handles fallback.
+function getPrimaryLeadType(lead) {
+  if (!Array.isArray(lead?.listTypes)) return null;
+  for (const lt of lead.listTypes) {
+    if (LEAD_TYPE_KEYS.has(lt.name)) return lt.name;
+  }
+  return null;
 }
 
 // Virtual sidebar rows: lead-type + tag intersections that the user wants
@@ -6487,7 +6514,8 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="inline-flex items-center justify-center w-12 h-7 rounded text-white font-bold text-sm" style={{ background: scoreColor(lead.score) }}>{lead.score}</span>
-              <span className="font-bold text-sm" style={{ color: TYPE_COLOR[lead.type] }}>{lead.type.toUpperCase()}</span>
+              {/* Fallback: getPrimaryLeadType returns null for D4D-only leads, estate-signal-only leads, or unmapped scraped data. */}
+              <span className="font-bold text-sm" style={{ color: TYPE_COLOR[getPrimaryLeadType(lead)] || "#475569" }}>{(getPrimaryLeadType(lead) || "—").toUpperCase()}</span>
               {lead.mlsStatus && lead.mlsStatus !== "Off-Market" && (
                 <span className="px-2 py-0.5 rounded text-[11px] font-bold border" style={{
                   borderColor: mlsCfg.color,
