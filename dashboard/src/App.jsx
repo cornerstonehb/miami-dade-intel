@@ -6948,7 +6948,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
             </div>
           )}
 
-          {(lead.type === "Inherited PR Deed" || lead.type === "Inherited QCD") && lead.ownerHeirs && (
+          {(hasListType(lead, "Inherited PR Deed") || hasListType(lead, "Inherited QCD")) && lead.ownerHeirs && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#a5f3fc", background: "#ecfeff" }}>
               <div className="flex items-center gap-2 mb-3">
                 <Star className="w-4 h-4" style={{ color: "#0891b2" }} />
