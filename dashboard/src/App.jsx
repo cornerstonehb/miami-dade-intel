@@ -6667,7 +6667,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
 
 
           {/* AUCTION DATA — PropertyOnion (FJ + auction date + verdict) */}
-          {(lead.type === "PFC Auction" || (lead.type === "Tax Default" || lead.type === "Tax Deed")) && (
+          {(hasListType(lead, "PFC Auction") || (hasListType(lead, "Tax Default") || hasListType(lead, "Tax Deed"))) && (
             <AuctionDataPanel
               lead={lead}
               onUpdate={(updates) => {
