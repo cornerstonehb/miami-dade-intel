@@ -6978,7 +6978,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           )}
 
           {/* MORTGAGE INFO — Realist forward-mortgage data */}
-          {!lead.reverseMortgage && lead.type !== "PFC Auction" && lead.type !== "Tax Default" && lead.type !== "Tax Deed" && (
+          {!lead.reverseMortgage && !hasListType(lead, "PFC Auction") && !hasListType(lead, "Tax Default") && !hasListType(lead, "Tax Deed") && (
             <MortgageInfoPanel
               lead={lead}
               onUpdate={(updates) => {
