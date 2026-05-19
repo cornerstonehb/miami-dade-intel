@@ -6568,7 +6568,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           </div>
 
           {/* ESTATE STATUS — confirmed EST OF */}
-          {lead.estateTag === "EST OF" && (
+          {hasListType(lead, "Deceased") && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#bbf7d0", background: "#f0fdf4" }}>
               <div className="flex items-center gap-2 mb-3">
                 <UserCircle className="w-4 h-4" style={{ color: "#15803d" }} />
@@ -6594,7 +6594,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           )}
 
           {/* ESTATE STATUS — co-owner with one estate, one living */}
-          {lead.estateTag === "EST OF 2nd Owner" && (
+          {hasListType(lead, "Deceased w/ 2nd Owner") && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#ddd6fe", background: "#f5f3ff" }}>
               <div className="flex items-center gap-2 mb-3">
                 <UserCircle className="w-4 h-4" style={{ color: "#7c3aed" }} />
@@ -6623,7 +6623,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           )}
 
           {/* ESTATE STATUS — Lady Bird Deed / Life Estate */}
-          {lead.estateTag === "LE / REM" && (
+          {hasListType(lead, "LE / REM") && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#fde68a", background: "#fffbeb" }}>
               <div className="flex items-center gap-2 mb-3">
                 <UserCircle className="w-4 h-4" style={{ color: "#d97706" }} />
@@ -6663,7 +6663,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           )}
 
           {/* ESTATE STATUS — possible (inferred) */}
-          {lead.estateTag === "Possible EST OF" && (
+          {hasListType(lead, "Possible Deceased") && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#a5f3fc", background: "#ecfeff" }}>
               <div className="flex items-center gap-2 mb-3">
                 <UserCircle className="w-4 h-4" style={{ color: "#0891b2" }} />
