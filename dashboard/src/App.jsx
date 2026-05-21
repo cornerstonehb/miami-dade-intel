@@ -2339,7 +2339,7 @@ function deriveStackCount(lead) {
   let n = 0;
   if (lead.estateTag) n++;
   if (lead.absenteeTier) n++;
-  if (lead.codeViolations?.activeCount > 0) n++;
+  if (lead.codeViolationsSummary?.activeCount > 0) n++;
   if (lead.possiblePi) n++;
   if (lead.possiblePace) n++;
   if (lead.reverseMortgage) n++;
@@ -3752,7 +3752,7 @@ function applyImport(parsedRows, schemaKey, existingLeads, currentApiConfig) {
       stats.enriched++;
       const enrichments = {};
       if (schemaKey === "countyReports") {
-        // Build a violation record and add to codeViolations.byCategory
+        // Build a violation record and add to codeViolationsSummary.byCategory
         const violation = {
           caseNumber: fields.caseNumber,
           type: fields.caseType,
@@ -3771,7 +3771,7 @@ function applyImport(parsedRows, schemaKey, existingLeads, currentApiConfig) {
         }
         const tagKeys = classifyViolationTags(violation);
         const isActive = isViolationActive(violation, currentApiConfig);
-        const prevCV = existing.codeViolations || { count: 0, activeCount: 0, totalFines: 0, byCategory: {}, activeCategories: [], scoreBoost: 0 };
+        const prevCV = existing.codeViolationsSummary || { count: 0, activeCount: 0, totalFines: 0, byCategory: {}, activeCategories: [], scoreBoost: 0 };
         const newByCategory = { ...prevCV.byCategory };
         // Add the violation to EVERY matching tag bucket (multi-tag mode)
         for (const tagKey of tagKeys) {
@@ -3800,7 +3800,7 @@ function applyImport(parsedRows, schemaKey, existingLeads, currentApiConfig) {
             if (it._isActive) activeUnique++;
           }
         }
-        enrichments.codeViolations = {
+        enrichments.codeViolationsSummary = {
           count: totalUnique,
           activeCount: activeUnique,
           totalFines: Object.values(newByCategory).reduce((s, b) => s + b.totalFines, 0),
@@ -4170,7 +4170,7 @@ export default function MiamiDadePropertyIntel() {
         const alreadyTagged = l.flags.includes("Code Violations");
         return {
           ...l,
-          codeViolations: {
+          codeViolationsSummary: {
             count: totalAll,
             activeCount: totalActive,
             totalFines,
@@ -4628,8 +4628,8 @@ export default function MiamiDadePropertyIntel() {
     if (possiblePiFilter) rows = rows.filter((r) => !!r.possiblePi);
     if (possiblePaceFilter) rows = rows.filter((r) => !!r.possiblePace);
     if (reverseMortgageFilter) rows = rows.filter((r) => !!r.reverseMortgage);
-    if (codeViolationsFilter) rows = rows.filter((r) => r.codeViolations?.activeCount > 0);
-    if (violationCategoryFilter) rows = rows.filter((r) => r.codeViolations?.activeCategories?.includes(violationCategoryFilter));
+    if (codeViolationsFilter) rows = rows.filter((r) => r.codeViolationsSummary?.activeCount > 0);
+    if (violationCategoryFilter) rows = rows.filter((r) => r.codeViolationsSummary?.activeCategories?.includes(violationCategoryFilter));
     if (importSourceFilter) rows = rows.filter((r) => Array.isArray(r.importSources) && r.importSources.includes(importSourceFilter));
     if (verdictFilter !== "All") rows = rows.filter((r) => r.auctionData?.verdict === verdictFilter);
     if (auctionUrgencyFilter.length > 0) rows = rows.filter((r) => {
@@ -4815,13 +4815,13 @@ export default function MiamiDadePropertyIntel() {
       if (r.possiblePi) possiblePiCount++;
       if (r.possiblePace) possiblePaceCount++;
       if (r.reverseMortgage) reverseMortgageCount++;
-      if (r.codeViolations?.activeCount > 0) codeViolationsCount++;
+      if (r.codeViolationsSummary?.activeCount > 0) codeViolationsCount++;
       if (Array.isArray(r.importSources)) {
         r.importSources.forEach((src) => {
           if (importSourceCounts[src] !== undefined) importSourceCounts[src]++;
         });
       }
-      (r.codeViolations?.activeCategories || []).forEach((catKey) => {
+      (r.codeViolationsSummary?.activeCategories || []).forEach((catKey) => {
         if (codeViolationCategoryCounts[catKey] !== undefined) codeViolationCategoryCounts[catKey]++;
       });
       if (r.auctionData?.verdict) byVerdict[r.auctionData.verdict]++;
@@ -4966,16 +4966,16 @@ export default function MiamiDadePropertyIntel() {
       "Mortgage Current Balance": r.mortgageInfo?.currentBalance || "",
       "Mortgage Lien Position": r.mortgageInfo?.lienPosition || "",
       "Mortgage Payment Status": r.mortgageInfo?.lastPaymentStatus || "",
-      "Code Violations Active": r.codeViolations?.activeCount || 0,
-      "Code Violations Total": r.codeViolations?.count || 0,
-      "Code Violations Fines": r.codeViolations?.totalFines || "",
-      "Violation Tags": (r.codeViolations?.activeCategories || []).map((k) => {
+      "Code Violations Active": r.codeViolationsSummary?.activeCount || 0,
+      "Code Violations Total": r.codeViolationsSummary?.count || 0,
+      "Code Violations Fines": r.codeViolationsSummary?.totalFines || "",
+      "Violation Tags": (r.codeViolationsSummary?.activeCategories || []).map((k) => {
         const c = VIOLATION_CATEGORIES.find((cc) => cc.key === k);
         return c ? c.label : k;
       }).join(" | "),
       ...Object.fromEntries(VIOLATION_CATEGORIES.map((c) => [
         `Has ${c.label}`,
-        r.codeViolations?.activeCategories?.includes(c.key) ? "Yes" : "",
+        r.codeViolationsSummary?.activeCategories?.includes(c.key) ? "Yes" : "",
       ])),
       "Final Judgment": r.auctionData?.finalJudgment || "",
       "PA Total Value": r.auctionData?.paTotalValue || "",
@@ -5806,8 +5806,8 @@ export default function MiamiDadePropertyIntel() {
                                 ⟲ RM
                               </span>
                             )}
-                            {r.codeViolations?.activeCount > 0 && (() => {
-                              const activeCats = r.codeViolations.activeCategories || [];
+                            {r.codeViolationsSummary?.activeCount > 0 && (() => {
+                              const activeCats = r.codeViolationsSummary.activeCategories || [];
                               if (activeCats.length === 0) return null;
                               const topCat = VIOLATION_CATEGORIES.find((c) => activeCats.includes(c.key));
                               const cat = topCat || { color: "#dc2626", bgColor: "#fee2e2", borderColor: "#fca5a5", shortLabel: "NOV", label: "Violation" };
@@ -5821,7 +5821,7 @@ export default function MiamiDadePropertyIntel() {
                                   borderColor: cat.borderColor,
                                   background: cat.bgColor,
                                   color: cat.color,
-                                }} title={`Tags: ${allLabels} · ${r.codeViolations.activeCount} active violation${r.codeViolations.activeCount > 1 ? "s" : ""} · ${fmtMoney(r.codeViolations.totalFines)} fines`}>
+                                }} title={`Tags: ${allLabels} · ${r.codeViolationsSummary.activeCount} active violation${r.codeViolationsSummary.activeCount > 1 ? "s" : ""} · ${fmtMoney(r.codeViolationsSummary.totalFines)} fines`}>
                                   {cat.shortLabel.toUpperCase()}
                                   {otherTags > 0 && <span className="opacity-75">+{otherTags}</span>}
                                 </span>
