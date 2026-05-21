@@ -892,7 +892,7 @@ function applyDeedsToLeads(leads, deeds) {
       if (!newFlags.includes("STACKED") && newFlags.length >= 3) newFlags.push("STACKED");
       // +30 for Inherited base, +10 for Absentee stack
       const adjustedScore = Math.min(100, lead.score + 30 + (isAbsentee ? 10 : 0));
-      const inheritedType = deed.deedType === "QCD" ? "Inherited QCD" : "Inherited PR Deed";
+      const inheritedType = deed.deedType === "QCD" ? "Inherited QCD" : "Inherited Probate";
       return {
         ...lead,
         type: inheritedType,
@@ -1038,7 +1038,7 @@ function applyEstateTags(leads) {
   return leads.map((lead) => {
     // Skip leads that are already sold (deed event closed them out) or already
     // reclassified as Inherited (the heir distribution supersedes any estate inference)
-    if (lead.soldAt || lead.type === "Inherited PR Deed" || lead.type === "Inherited QCD") return lead;
+    if (lead.soldAt || lead.type === "Inherited Probate" || lead.type === "Inherited QCD") return lead;
 
     // Synthesize a deterministic last-sale-date if the lead doesn't have one yet.
     // In production this comes from the PA bulk data join. Mock distribution:
@@ -2883,7 +2883,7 @@ const LEAD_TYPES = [
   // Tax Default family — delinquent taxes, certificate stage
   { key: "Tax Default", family: "Tax Default", icon: Receipt, color: "#eab308" },
   // Inherited family — two distinct deed-type signals
-  { key: "Inherited PR Deed", family: "Inherited", icon: Home, color: "#0891b2" },
+  { key: "Inherited Probate", family: "Inherited", icon: Home, color: "#0891b2" },
   { key: "Inherited QCD", family: "Inherited", icon: Home, color: "#0e7490" },
   // Probate (court-stage)
   { key: "Probate", family: "Probate", icon: UserCircle, color: "#16a34a" },
@@ -2965,7 +2965,7 @@ const LIST_TYPE_NAMES = [
   "Tax Default",
   "Tax Deed",
   "Probate",
-  "Inherited PR Deed",
+  "Inherited Probate",
   "Inherited QCD",
   "Unlawful Detainer",
   "Eviction",
@@ -3024,7 +3024,7 @@ const SIMPLE_LEGACY_TYPE_TO_LIST_TYPE = {
   "PFC Auction":        "PFC Auction",
   "Pre-Foreclosure":    "Pre-Foreclosure",
   "Tax Default":        "Tax Default",
-  "Inherited PR Deed":  "Inherited PR Deed",
+  "Inherited Probate":  "Inherited Probate",
   "Inherited QCD":      "Inherited QCD",
   "Probate":            "Probate",
   "Adverse Possession": "Adverse Possession",
@@ -5529,7 +5529,7 @@ export default function MiamiDadePropertyIntel() {
                 </div>
                 <FilterTab label="All Scores" count={fmtCount(totals.total)} active={activeType.length === 0 && !typeTagIntersection && ownerStatusFilter.length === 0} onClick={() => { setActiveType([]); setTypeTagIntersection(null); setOwnerStatusFilter([]); }} />
                 {/* Lead-type pills + their EST OF / Possible EST OF intersections.
-                    The 7 removed types (Inherited PR Deed, Inherited QCD, Pre-Foreclosure,
+                    The 7 removed types (Inherited Probate, Inherited QCD, Pre-Foreclosure,
                     Tax Default, Judgment, Federal Tax Lien, Other Liens) are still in
                     LEAD_TYPES and remain available via the sidebar — they're just not
                     surfaced in this fast-action pill row. */}
@@ -5918,7 +5918,7 @@ export default function MiamiDadePropertyIntel() {
                                 POSS EST OF
                               </span>
                             )}
-                            {(hasListType(r, "Inherited PR Deed") || hasListType(r, "Inherited QCD")) && (
+                            {(hasListType(r, "Inherited Probate") || hasListType(r, "Inherited QCD")) && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#0891b2",
                                 background: "#cffafe",
@@ -6976,7 +6976,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
             </div>
           )}
 
-          {(hasListType(lead, "Inherited PR Deed") || hasListType(lead, "Inherited QCD")) && lead.ownerHeirs && (
+          {(hasListType(lead, "Inherited Probate") || hasListType(lead, "Inherited QCD")) && lead.ownerHeirs && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#a5f3fc", background: "#ecfeff" }}>
               <div className="flex items-center gap-2 mb-3">
                 <Star className="w-4 h-4" style={{ color: "#0891b2" }} />
