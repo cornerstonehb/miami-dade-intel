@@ -4703,7 +4703,7 @@ export default function MiamiDadePropertyIntel() {
         case "score":              return ((a.score || 0) - (b.score || 0)) * dir;
         case "badConditionScore":  return ((a.badConditionScore || 0) - (b.badConditionScore || 0)) * dir;
         case "stackCount":         return ((a.stackCount || 0) - (b.stackCount || 0)) * dir;
-        case "type":               return (a.type || "").localeCompare(b.type || "") * dir;
+        case "type":               return (getPrimaryLeadType(a) || "").localeCompare(getPrimaryLeadType(b) || "") * dir;
         case "amount":             return ((a.amount || 0) - (b.amount || 0)) * dir;
         case "equityApproxAmount": return ((a.equityApproxAmount || 0) - (b.equityApproxAmount || 0)) * dir;
         case "filed":              return (a.filed || "").localeCompare(b.filed || "") * dir;
