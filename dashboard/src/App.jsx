@@ -2971,7 +2971,7 @@ const LIST_TYPE_NAMES = [
   "Eviction",
   "Liens",
   "Deceased",
-  "Deceased w/ 2nd Owner",
+  "Deceased/2nd Owner",
   "Possible Deceased",
   "LE / REM",
   "Code Violations",
@@ -2988,7 +2988,7 @@ const LIST_TYPE_PRIORITY = Object.fromEntries(
 // estateTag is being retired in favor of explicit Deceased-family List memberships.
 const ESTATE_TAG_TO_LIST_TYPE = {
   "EST OF": "Deceased",
-  "EST OF 2nd Owner": "Deceased w/ 2nd Owner",
+  "EST OF 2nd Owner": "Deceased/2nd Owner",
   "Possible EST OF": "Possible Deceased",
   "LE / REM": "LE / REM",
 };
@@ -4742,7 +4742,7 @@ export default function MiamiDadePropertyIntel() {
     };
     const byType = LEAD_TYPES.reduce((acc, t) => { acc[t.key] = 0; return acc; }, {});
     const byMls = { Active: 0, Pending: 0, "Came Back": 0, Expired: 0, Canceled: 0, "Off-Market": 0, "Active DOM 90+": 0 };
-    const byOwnerStatus = { "Deceased": 0, "Deceased w/ 2nd Owner": 0, "LE / REM": 0, "Possible Deceased": 0 };
+    const byOwnerStatus = { "Deceased": 0, "Deceased/2nd Owner": 0, "LE / REM": 0, "Possible Deceased": 0 };
     const byPaTag = { "Senior": 0, "Widow/Widower": 0, "Homestead Penalty": 0 };
     const byAbsentee = { "In County": 0, "In State": 0, "Out of State": 0, "Out of Country": 0, "Any": 0 };
     let possiblePiCount = 0;
@@ -5440,7 +5440,7 @@ export default function MiamiDadePropertyIntel() {
             <div className="space-y-1">
               <SidebarItem icon={Layers} label="All" count={totals.total} active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} iconColor="#64748b" />
               <SidebarItem icon={UserCircle} label="Deceased" count={totals.byOwnerStatus["Deceased"]} active={ownerStatusFilter.includes("Deceased")} onClick={() => setOwnerStatusFilter(["Deceased"])} iconColor="#16a34a" />
-              <SidebarItem icon={UserCircle} label="Deceased w/ 2nd Owner" count={totals.byOwnerStatus["Deceased w/ 2nd Owner"]} active={ownerStatusFilter.includes("Deceased w/ 2nd Owner")} onClick={() => setOwnerStatusFilter(["Deceased w/ 2nd Owner"])} iconColor="#7c3aed" />
+              <SidebarItem icon={UserCircle} label="Deceased/2nd Owner" count={totals.byOwnerStatus["Deceased/2nd Owner"]} active={ownerStatusFilter.includes("Deceased/2nd Owner")} onClick={() => setOwnerStatusFilter(["Deceased/2nd Owner"])} iconColor="#7c3aed" />
               <SidebarItem icon={UserCircle} label="LE / REM" count={totals.byOwnerStatus["LE / REM"]} active={ownerStatusFilter.includes("LE / REM")} onClick={() => setOwnerStatusFilter(["LE / REM"])} iconColor="#f59e0b" />
               <SidebarItem icon={UserCircle} label="Possible Deceased" count={totals.byOwnerStatus["Possible Deceased"]} active={ownerStatusFilter.includes("Possible Deceased")} onClick={() => setOwnerStatusFilter(["Possible Deceased"])} iconColor="#0891b2" />
             </div>
@@ -5899,7 +5899,7 @@ export default function MiamiDadePropertyIntel() {
                                 EST OF
                               </span>
                             )}
-                            {hasListType(r, "Deceased w/ 2nd Owner") && (
+                            {hasListType(r, "Deceased/2nd Owner") && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold border w-fit" style={{
                                 borderColor: "#7c3aed",
                                 background: "#ede9fe",
@@ -6165,7 +6165,7 @@ export default function MiamiDadePropertyIntel() {
                 <Section title="OWNER STATUS">
                   <Chip active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} label="Any" />
                   <Chip active={ownerStatusFilter.includes("Deceased")}           onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased")}           label="Deceased" color="#16a34a" />
-                  <Chip active={ownerStatusFilter.includes("Deceased w/ 2nd Owner")} onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased w/ 2nd Owner")} label="Deceased w/ 2nd Owner" color="#7c3aed" />
+                  <Chip active={ownerStatusFilter.includes("Deceased/2nd Owner")} onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased/2nd Owner")} label="Deceased/2nd Owner" color="#7c3aed" />
                   <Chip active={ownerStatusFilter.includes("LE / REM")}         onClick={() => toggleArrFilter(setOwnerStatusFilter, "LE / REM")}         label="LE / REM" color="#f59e0b" />
                   <Chip active={ownerStatusFilter.includes("Possible Deceased")}  onClick={() => toggleArrFilter(setOwnerStatusFilter, "Possible Deceased")}  label="Possible Deceased" color="#0891b2" />
                 </Section>
@@ -6602,7 +6602,7 @@ function LeadDetailModal({ lead, onClose, onComp, onCalc, setAllLeads, codeViola
           )}
 
           {/* ESTATE STATUS — co-owner with one estate, one living */}
-          {hasListType(lead, "Deceased w/ 2nd Owner") && (
+          {hasListType(lead, "Deceased/2nd Owner") && (
             <div className="rounded-xl p-4 border" style={{ borderColor: "#ddd6fe", background: "#f5f3ff" }}>
               <div className="flex items-center gap-2 mb-3">
                 <UserCircle className="w-4 h-4" style={{ color: "#7c3aed" }} />
