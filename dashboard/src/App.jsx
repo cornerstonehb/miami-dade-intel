@@ -3185,12 +3185,12 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "Adverse Possession Possible EST OF", shortLabel: "Possible EST OF", type: "Adverse Possession", tag: "Possible EST OF", family: "Adverse Possession" },
   // Prop Liens × estate-tag intersections — lien-burdened estate property
   // where heirs need to clean up title before sale.
-  { key: "Prop Liens <$50K EST OF", shortLabel: "EST OF", type: "Prop Liens <$50K", tag: "EST OF", family: "Prop Liens <$50K" },
-  { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible EST OF", type: "Prop Liens <$50K", tag: "Possible EST OF", family: "Prop Liens <$50K" },
-  { key: "Prop Liens $50-100K EST OF", shortLabel: "EST OF", type: "Prop Liens $50-100K", tag: "EST OF", family: "Prop Liens $50-100K" },
-  { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible EST OF", type: "Prop Liens $50-100K", tag: "Possible EST OF", family: "Prop Liens $50-100K" },
-  { key: "Prop Liens $100K+ EST OF", shortLabel: "EST OF", type: "Prop Liens $100K+", tag: "EST OF", family: "Prop Liens $100K+" },
-  { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible EST OF", type: "Prop Liens $100K+", tag: "Possible EST OF", family: "Prop Liens $100K+" },
+  { key: "Prop Liens <$50K EST OF", shortLabel: "EST OF", type: "Liens", tag: "EST OF", family: "Prop Liens <$50K", parentFamily: "Liens", tier: "<$50K" },
+  { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible EST OF", type: "Liens", tag: "Possible EST OF", family: "Prop Liens <$50K", parentFamily: "Liens", tier: "<$50K" },
+  { key: "Prop Liens $50-100K EST OF", shortLabel: "EST OF", type: "Liens", tag: "EST OF", family: "Prop Liens $50-100K", parentFamily: "Liens", tier: "$50-100K" },
+  { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible EST OF", type: "Liens", tag: "Possible EST OF", family: "Prop Liens $50-100K", parentFamily: "Liens", tier: "$50-100K" },
+  { key: "Prop Liens $100K+ EST OF", shortLabel: "EST OF", type: "Liens", tag: "EST OF", family: "Prop Liens $100K+", parentFamily: "Liens", tier: "$100K+" },
+  { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible EST OF", type: "Liens", tag: "Possible EST OF", family: "Prop Liens $100K+", parentFamily: "Liens", tier: "$100K+" },
 ];
 
 const TYPE_COLOR = Object.fromEntries(LEAD_TYPES.map((t) => [t.key, t.color]));
@@ -4561,12 +4561,15 @@ export default function MiamiDadePropertyIntel() {
       //   - tag === "__OTHER__":  matches when lead has NO estate tag
       //   - tag === "EST OF" etc: matches when lead has that estate tag
       rows = rows.filter((r) => {
-        if (r.type !== typeTagIntersection.type) return false;
+        if (!hasListType(r, typeTagIntersection.type)) return false;
         if (typeTagIntersection.probateStatus) {
           return r.probateStatus === typeTagIntersection.probateStatus;
         }
         if (typeTagIntersection.outcome) {
           return r.auctionData?.outcome === typeTagIntersection.outcome;
+        }
+        if (typeTagIntersection.parentFamily === "Liens") {
+          return r.liens.some(l => l.tier === typeTagIntersection.tier) && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
         }
         const tag = typeTagIntersection.tag;
         if (tag === "__OTHER__") {
@@ -4577,7 +4580,7 @@ export default function MiamiDadePropertyIntel() {
         return false;
       });
     } else if (activeType.length > 0) {
-      rows = rows.filter((r) => activeType.includes(r.type));
+      rows = rows.filter((r) => activeType.some(t => hasListType(r, t)));
     }
     if (conditionTagFilter) {
       rows = rows.filter((r) => Array.isArray(r.conditionTags) && r.conditionTags.includes(conditionTagFilter));
@@ -4615,7 +4618,7 @@ export default function MiamiDadePropertyIntel() {
       // count over the full jurisdictionScoped set including Active/Pending.
       rows = rows.filter((r) => r.mlsStatus !== "Active" && r.mlsStatus !== "Pending");
     }
-    if (ownerStatusFilter.length > 0) rows = rows.filter((r) => ownerStatusFilter.includes(r.estateTag));
+    if (ownerStatusFilter.length > 0) rows = rows.filter((r) => ownerStatusFilter.includes(ESTATE_TAG_TO_LIST_TYPE[r.estateTag]));
     if (paTagFilter.length > 0)       rows = rows.filter((r) => paTagFilter.some((t) => (r.paTags || []).includes(t)));
     if (absenteeFilter.length > 0) {
       // "Any" inside the array means "any absentee tier set"; otherwise match specific tiers
@@ -4739,7 +4742,7 @@ export default function MiamiDadePropertyIntel() {
     };
     const byType = LEAD_TYPES.reduce((acc, t) => { acc[t.key] = 0; return acc; }, {});
     const byMls = { Active: 0, Pending: 0, "Came Back": 0, Expired: 0, Canceled: 0, "Off-Market": 0, "Active DOM 90+": 0 };
-    const byOwnerStatus = { "EST OF": 0, "EST OF 2nd Owner": 0, "LE / REM": 0, "Possible EST OF": 0 };
+    const byOwnerStatus = { "Deceased": 0, "Deceased w/ 2nd Owner": 0, "LE / REM": 0, "Possible Deceased": 0 };
     const byPaTag = { "Senior": 0, "Widow/Widower": 0, "Homestead Penalty": 0 };
     const byAbsentee = { "In County": 0, "In State": 0, "Out of State": 0, "Out of Country": 0, "Any": 0 };
     let possiblePiCount = 0;
@@ -4804,7 +4807,7 @@ export default function MiamiDadePropertyIntel() {
       // the existing absentee tier counts where a lead belongs to multiple
       // buckets and we tally each independently.
       if (r.mlsStatus === "Active" && (r.mlsDaysOnMarket || 0) >= 90) byMls["Active DOM 90+"]++;
-      if (r.estateTag && byOwnerStatus[r.estateTag] !== undefined) byOwnerStatus[r.estateTag]++;
+      if (r.estateTag && byOwnerStatus[ESTATE_TAG_TO_LIST_TYPE[r.estateTag]] !== undefined) byOwnerStatus[ESTATE_TAG_TO_LIST_TYPE[r.estateTag]]++;
       (r.paTags || []).forEach((tag) => {
         if (byPaTag[tag] !== undefined) byPaTag[tag]++;
       });
@@ -4836,13 +4839,15 @@ export default function MiamiDadePropertyIntel() {
       // counted separately below from recognizedLeads, so the Sold counts
       // reflect true cross-view totals rather than dropping to 0 in Active view.
       for (const it of LEAD_TYPE_TAG_INTERSECTIONS) {
-        if (r.type !== it.type) continue;
+        if (!hasListType(r, it.type)) continue;
         if (it.outcome) continue; // handled in the recognizedLeads pass below
         let matches;
         if (it.probateStatus) {
           matches = r.probateStatus === it.probateStatus;
         } else if (it.tag === "__OTHER__") {
           matches = !r.estateTag || !ESTATE_TAG_KEYS.includes(r.estateTag);
+        } else if (it.parentFamily === "Liens") {
+          matches = r.liens.some(l => l.tier === it.tier) && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[it.tag]);
         } else {
           matches = r.estateTag === it.tag || (Array.isArray(r.paTags) && r.paTags.includes(it.tag));
         }
@@ -5338,7 +5343,8 @@ export default function MiamiDadePropertyIntel() {
                         const isActive = typeTagIntersection?.type === it.type && (
                           it.probateStatus ? typeTagIntersection?.probateStatus === it.probateStatus
                           : it.outcome ? typeTagIntersection?.outcome === it.outcome
-                                       : typeTagIntersection?.tag === it.tag
+                          : it.parentFamily === "Liens" ? (typeTagIntersection?.tier === it.tier && typeTagIntersection?.tag === it.tag)
+                          : typeTagIntersection?.tag === it.tag
                         );
                         return (
                           <button
@@ -5352,7 +5358,9 @@ export default function MiamiDadePropertyIntel() {
                                     ? { type: it.type, probateStatus: it.probateStatus }
                                     : it.outcome
                                       ? { type: it.type, outcome: it.outcome }
-                                      : { type: it.type, tag: it.tag }
+                                      : it.parentFamily === "Liens"
+                                        ? { type: it.type, tier: it.tier, tag: it.tag }
+                                        : { type: it.type, tag: it.tag }
                                 );
                                 setActiveType([]); // intersection supersedes type
                                 // Outcome intersections cross-cut with the AUCTION OUTCOME
@@ -5431,10 +5439,10 @@ export default function MiamiDadePropertyIntel() {
             <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>OWNER STATUS</div>
             <div className="space-y-1">
               <SidebarItem icon={Layers} label="All" count={totals.total} active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} iconColor="#64748b" />
-              <SidebarItem icon={UserCircle} label="EST OF ★" count={totals.byOwnerStatus["EST OF"]} active={ownerStatusFilter.includes("EST OF")} onClick={() => setOwnerStatusFilter(["EST OF"])} iconColor="#16a34a" />
-              <SidebarItem icon={UserCircle} label="EST OF 2nd Owner ★" count={totals.byOwnerStatus["EST OF 2nd Owner"]} active={ownerStatusFilter.includes("EST OF 2nd Owner")} onClick={() => setOwnerStatusFilter(["EST OF 2nd Owner"])} iconColor="#7c3aed" />
+              <SidebarItem icon={UserCircle} label="Deceased" count={totals.byOwnerStatus["Deceased"]} active={ownerStatusFilter.includes("Deceased")} onClick={() => setOwnerStatusFilter(["Deceased"])} iconColor="#16a34a" />
+              <SidebarItem icon={UserCircle} label="Deceased w/ 2nd Owner" count={totals.byOwnerStatus["Deceased w/ 2nd Owner"]} active={ownerStatusFilter.includes("Deceased w/ 2nd Owner")} onClick={() => setOwnerStatusFilter(["Deceased w/ 2nd Owner"])} iconColor="#7c3aed" />
               <SidebarItem icon={UserCircle} label="LE / REM" count={totals.byOwnerStatus["LE / REM"]} active={ownerStatusFilter.includes("LE / REM")} onClick={() => setOwnerStatusFilter(["LE / REM"])} iconColor="#f59e0b" />
-              <SidebarItem icon={UserCircle} label="Possible EST OF" count={totals.byOwnerStatus["Possible EST OF"]} active={ownerStatusFilter.includes("Possible EST OF")} onClick={() => setOwnerStatusFilter(["Possible EST OF"])} iconColor="#0891b2" />
+              <SidebarItem icon={UserCircle} label="Possible Deceased" count={totals.byOwnerStatus["Possible Deceased"]} active={ownerStatusFilter.includes("Possible Deceased")} onClick={() => setOwnerStatusFilter(["Possible Deceased"])} iconColor="#0891b2" />
             </div>
             <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>PA TAGS</div>
             <div className="space-y-1">
@@ -6156,10 +6164,10 @@ export default function MiamiDadePropertyIntel() {
 
                 <Section title="OWNER STATUS">
                   <Chip active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} label="Any" />
-                  <Chip active={ownerStatusFilter.includes("EST OF")}           onClick={() => toggleArrFilter(setOwnerStatusFilter, "EST OF")}           label="EST OF" color="#16a34a" />
-                  <Chip active={ownerStatusFilter.includes("EST OF 2nd Owner")} onClick={() => toggleArrFilter(setOwnerStatusFilter, "EST OF 2nd Owner")} label="EST OF 2nd Owner" color="#7c3aed" />
+                  <Chip active={ownerStatusFilter.includes("Deceased")}           onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased")}           label="Deceased" color="#16a34a" />
+                  <Chip active={ownerStatusFilter.includes("Deceased w/ 2nd Owner")} onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased w/ 2nd Owner")} label="Deceased w/ 2nd Owner" color="#7c3aed" />
                   <Chip active={ownerStatusFilter.includes("LE / REM")}         onClick={() => toggleArrFilter(setOwnerStatusFilter, "LE / REM")}         label="LE / REM" color="#f59e0b" />
-                  <Chip active={ownerStatusFilter.includes("Possible EST OF")}  onClick={() => toggleArrFilter(setOwnerStatusFilter, "Possible EST OF")}  label="Possible EST OF" color="#0891b2" />
+                  <Chip active={ownerStatusFilter.includes("Possible Deceased")}  onClick={() => toggleArrFilter(setOwnerStatusFilter, "Possible Deceased")}  label="Possible Deceased" color="#0891b2" />
                 </Section>
 
                 <Section title="ABSENTEE OWNER">
