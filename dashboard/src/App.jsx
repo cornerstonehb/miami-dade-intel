@@ -2969,7 +2969,10 @@ const LIST_TYPE_NAMES = [
   "Inherited QCD",
   "Unlawful Detainer",
   "Eviction",
-  "Liens",
+  "Property Liens",
+  "Federal Tax Liens",
+  "Other Liens",
+  "Judgments",
   "Deceased",
   "Deceased/2nd Owner",
   "Possible Deceased",
@@ -3002,17 +3005,17 @@ const PROBATE_STATUS_TO_SUB_STATUS = {
   dismissed: "Closed - Dismissed",
 };
 
-// Legacy lien-family lead.type values → record shape for the new per-record
-// lead.liens[] array. The five legacy lien types and "Judgment" all collapse
-// into a single Liens List membership; the type/tier distinction is preserved
-// at the record level.
+// Legacy lien-family lead.type values -> record shape for the new per-record
+// lead.liens[] array. Six legacy types (Prop Liens x 3, Federal Tax Lien,
+// Other Liens, Judgment) map to four canonical List Types per 2.7d's
+// 4-parent-block model. Tier preserved at the record level.
 const LEGACY_LIEN_TYPE_TO_RECORD = {
-  "Prop Liens <$50K":    { type: "Property Lien",    tier: "<$50K"    },
-  "Prop Liens $50-100K": { type: "Property Lien",    tier: "$50-100K" },
-  "Prop Liens $100K+":   { type: "Property Lien",    tier: "$100K+"   },
-  "Federal Tax Lien":    { type: "Federal Tax Lien", tier: null       },
-  "Other Liens":         { type: "Other Lien",       tier: null       },
-  "Judgment":            { type: "Judgment",         tier: null       },
+  "Prop Liens <$50K":    { type: "Property Liens",   tier: "<$50K"    },
+  "Prop Liens $50-100K": { type: "Property Liens",   tier: "$50-100K" },
+  "Prop Liens $100K+":   { type: "Property Liens",   tier: "$100K+"   },
+  "Federal Tax Lien":    { type: "Federal Tax Liens", tier: null      },
+  "Other Liens":         { type: "Other Liens",       tier: null      },
+  "Judgment":            { type: "Judgments",         tier: null      },
 };
 const LEGACY_LIEN_TYPES = new Set(Object.keys(LEGACY_LIEN_TYPE_TO_RECORD));
 
@@ -3061,14 +3064,16 @@ function legacyToNewShape(lead) {
       }
       listTypes.push(membership);
     } else if (LEGACY_LIEN_TYPES.has(lead.type)) {
-      // Liens membership (single, even if multiple records).
+      // Per the 2.7d 4-parent-block model, the legacy lien type determines
+      // which canonical List Type membership to push (Property Liens,
+      // Federal Tax Liens, Other Liens, or Judgments). The record-level
+      // type/tier distinction is preserved in lead.liens[].
+      const record = LEGACY_LIEN_TYPE_TO_RECORD[lead.type];
       listTypes.push({
-        name: "Liens",
+        name: record.type,
         source: "ported-from-type",
         verifiedAt: today,
       });
-      // Per-record entry preserving the original type and tier.
-      const record = LEGACY_LIEN_TYPE_TO_RECORD[lead.type];
       liens.push({
         type: record.type,
         tier: record.tier,
