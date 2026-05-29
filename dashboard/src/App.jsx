@@ -3144,32 +3144,32 @@ const ESTATE_TAG_KEYS = ["EST OF", "Possible EST OF", "EST OF 2nd Owner", "LE / 
 // that context, leaving more visual room for the actual tag/outcome text.
 const LEAD_TYPE_TAG_INTERSECTIONS = [
   // Tax Deed Auction family (auction-stage)
-  { key: "Tax Deed Auction EST OF", shortLabel: "EST OF", type: "Tax Deed Auction", tag: "EST OF", family: "Tax Deed Auction" },
-  { key: "Tax Deed Auction Possible EST OF", shortLabel: "Possible EST OF", type: "Tax Deed Auction", tag: "Possible EST OF", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction EST OF", shortLabel: "Deceased", type: "Tax Deed Auction", tag: "EST OF", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Deed Auction", tag: "Possible EST OF", family: "Tax Deed Auction" },
   { key: "Tax Deed Auction Other", shortLabel: "Other", type: "Tax Deed Auction", tag: "__OTHER__", family: "Tax Deed Auction" },
   // Tax Deed Auction outcomes
   { key: "Tax Deed Auction Cancelled BK", shortLabel: "Cancelled — BK", type: "Tax Deed Auction", outcome: "cancelled_bk", family: "Tax Deed Auction" },
   { key: "Tax Deed Auction Cancelled Other", shortLabel: "Cancelled — Other", type: "Tax Deed Auction", outcome: "cancelled_other", family: "Tax Deed Auction" },
   { key: "Tax Deed Auction Sold", shortLabel: "Sold", type: "Tax Deed Auction", outcome: "sold", family: "Tax Deed Auction" },
   // Tax Deed family (case filed, no auction yet)
-  { key: "Tax Deed EST OF", shortLabel: "EST OF", type: "Tax Deed", tag: "EST OF", family: "Tax Deed" },
-  { key: "Tax Deed Possible EST OF", shortLabel: "Possible EST OF", type: "Tax Deed", tag: "Possible EST OF", family: "Tax Deed" },
+  { key: "Tax Deed EST OF", shortLabel: "Deceased", type: "Tax Deed", tag: "EST OF", family: "Tax Deed" },
+  { key: "Tax Deed Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Deed", tag: "Possible EST OF", family: "Tax Deed" },
   { key: "Tax Deed Other", shortLabel: "Other", type: "Tax Deed", tag: "__OTHER__", family: "Tax Deed" },
   // PFC Auction family
-  { key: "PFC Auction EST OF", shortLabel: "EST OF", type: "PFC Auction", tag: "EST OF", family: "Pre-Foreclosure Auction" },
-  { key: "PFC Auction Possible EST OF", shortLabel: "Possible EST OF", type: "PFC Auction", tag: "Possible EST OF", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction EST OF", shortLabel: "Deceased", type: "PFC Auction", tag: "EST OF", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction Possible EST OF", shortLabel: "Possible Deceased", type: "PFC Auction", tag: "Possible EST OF", family: "Pre-Foreclosure Auction" },
   { key: "PFC Auction Other", shortLabel: "Other", type: "PFC Auction", tag: "__OTHER__", family: "Pre-Foreclosure Auction" },
   // PFC Auction outcomes
   { key: "PFC Auction Cancelled BK", shortLabel: "Cancelled — BK", type: "PFC Auction", outcome: "cancelled_bk", family: "Pre-Foreclosure Auction" },
   { key: "PFC Auction Cancelled Other", shortLabel: "Cancelled — Other", type: "PFC Auction", outcome: "cancelled_other", family: "Pre-Foreclosure Auction" },
   { key: "PFC Auction Sold", shortLabel: "Sold", type: "PFC Auction", outcome: "sold", family: "Pre-Foreclosure Auction" },
   // Pre-Foreclosure family
-  { key: "PFC EST OF", shortLabel: "EST OF", type: "Pre-Foreclosure", tag: "EST OF", family: "Pre-Foreclosure" },
-  { key: "PFC Possible EST OF", shortLabel: "Possible EST OF", type: "Pre-Foreclosure", tag: "Possible EST OF", family: "Pre-Foreclosure" },
+  { key: "PFC EST OF", shortLabel: "Deceased", type: "Pre-Foreclosure", tag: "EST OF", family: "Pre-Foreclosure" },
+  { key: "PFC Possible EST OF", shortLabel: "Possible Deceased", type: "Pre-Foreclosure", tag: "Possible EST OF", family: "Pre-Foreclosure" },
   { key: "PFC Other", shortLabel: "Other", type: "Pre-Foreclosure", tag: "__OTHER__", family: "Pre-Foreclosure" },
   // Tax Default family
-  { key: "Tax Default EST OF", shortLabel: "EST OF", type: "Tax Default", tag: "EST OF", family: "Tax Default" },
-  { key: "Tax Default Possible EST OF", shortLabel: "Possible EST OF", type: "Tax Default", tag: "Possible EST OF", family: "Tax Default" },
+  { key: "Tax Default EST OF", shortLabel: "Deceased", type: "Tax Default", tag: "EST OF", family: "Tax Default" },
+  { key: "Tax Default Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Default", tag: "Possible EST OF", family: "Tax Default" },
   { key: "Tax Default Other", shortLabel: "Other", type: "Tax Default", tag: "__OTHER__", family: "Tax Default" },
   // Probate family — status-based intersections via lead.probateStatus.
   // No EST OF / Possible EST OF intersections here because a probate
@@ -3180,25 +3180,25 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "Probate Closed", shortLabel: "Closed", type: "Probate", probateStatus: "closed", family: "Probate" },
   // Adverse Possession × estate-tag intersections — heirs surfacing on a
   // long-held property under an AP claim is the cleanest specialty deal.
-  { key: "Adverse Possession EST OF", shortLabel: "EST OF", type: "Adverse Possession", tag: "EST OF", family: "Adverse Possession" },
-  { key: "Adverse Possession Possible EST OF", shortLabel: "Possible EST OF", type: "Adverse Possession", tag: "Possible EST OF", family: "Adverse Possession" },
+  { key: "Adverse Possession EST OF", shortLabel: "Deceased", type: "Adverse Possession", tag: "EST OF", family: "Adverse Possession" },
+  { key: "Adverse Possession Possible EST OF", shortLabel: "Possible Deceased", type: "Adverse Possession", tag: "Possible EST OF", family: "Adverse Possession" },
   // Property Liens × estate-tag intersections — lien-burdened estate property
   // where heirs need to clean up title before sale.
-  { key: "Prop Liens <$50K EST OF", shortLabel: "EST OF", type: "Property Liens", tag: "EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
-  { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible EST OF", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
-  { key: "Prop Liens $50-100K EST OF", shortLabel: "EST OF", type: "Property Liens", tag: "EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
-  { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible EST OF", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
-  { key: "Prop Liens $100K+ EST OF", shortLabel: "EST OF", type: "Property Liens", tag: "EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
-  { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible EST OF", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
+  { key: "Prop Liens <$50K EST OF", shortLabel: "Deceased", type: "Property Liens", tag: "EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
+  { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible Deceased", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
+  { key: "Prop Liens $50-100K EST OF", shortLabel: "Deceased", type: "Property Liens", tag: "EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
+  { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible Deceased", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
+  { key: "Prop Liens $100K+ EST OF", shortLabel: "Deceased", type: "Property Liens", tag: "EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
+  { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible Deceased", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
   // Federal Tax Liens × estate-tag intersections.
-  { key: "Federal Tax Liens EST OF", shortLabel: "EST OF", type: "Federal Tax Liens", tag: "EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
-  { key: "Federal Tax Liens Possible EST OF", shortLabel: "Possible EST OF", type: "Federal Tax Liens", tag: "Possible EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
+  { key: "Federal Tax Liens EST OF", shortLabel: "Deceased", type: "Federal Tax Liens", tag: "EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
+  { key: "Federal Tax Liens Possible EST OF", shortLabel: "Possible Deceased", type: "Federal Tax Liens", tag: "Possible EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
   // Other Liens × estate-tag intersections.
-  { key: "Other Liens EST OF", shortLabel: "EST OF", type: "Other Liens", tag: "EST OF", family: "Other Liens", parentFamily: "Other Liens" },
-  { key: "Other Liens Possible EST OF", shortLabel: "Possible EST OF", type: "Other Liens", tag: "Possible EST OF", family: "Other Liens", parentFamily: "Other Liens" },
+  { key: "Other Liens EST OF", shortLabel: "Deceased", type: "Other Liens", tag: "EST OF", family: "Other Liens", parentFamily: "Other Liens" },
+  { key: "Other Liens Possible EST OF", shortLabel: "Possible Deceased", type: "Other Liens", tag: "Possible EST OF", family: "Other Liens", parentFamily: "Other Liens" },
   // Judgments × estate-tag intersections.
-  { key: "Judgments EST OF", shortLabel: "EST OF", type: "Judgments", tag: "EST OF", family: "Judgments", parentFamily: "Judgments" },
-  { key: "Judgments Possible EST OF", shortLabel: "Possible EST OF", type: "Judgments", tag: "Possible EST OF", family: "Judgments", parentFamily: "Judgments" },
+  { key: "Judgments EST OF", shortLabel: "Deceased", type: "Judgments", tag: "EST OF", family: "Judgments", parentFamily: "Judgments" },
+  { key: "Judgments Possible EST OF", shortLabel: "Possible Deceased", type: "Judgments", tag: "Possible EST OF", family: "Judgments", parentFamily: "Judgments" },
 ];
 
 const TYPE_COLOR = Object.fromEntries(LEAD_TYPES.map((t) => [t.key, t.color]));
