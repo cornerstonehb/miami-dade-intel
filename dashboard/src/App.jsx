@@ -528,13 +528,7 @@ function generateExtraLeads(base) {
         if (i % 29 === 0) return ["BUENOS AIRES, ARGENTINA", "CARACAS, VENEZUELA", "BOGOTA, COLOMBIA"][i % 3];
         return `${city}, FL ${zip}-${String(1000 + i).padStart(4, "0")}`;
       })(),
-      amount: (() => {
-        // For Prop Liens tiers, generate an amount that's actually in the tier
-        if (t === "Prop Liens <$50K") return 5000 + Math.floor(Math.random() * 44000);   // 5K-49K
-        if (t === "Prop Liens $50-100K") return 50000 + Math.floor(Math.random() * 49000); // 50K-99K
-        if (t === "Prop Liens $100K+") return 100000 + Math.floor(Math.random() * 250000);   // 100K-350K
-        return 1000 + Math.floor(Math.random() * 50000);
-      })(),
+      amount: 1000 + Math.floor(Math.random() * 50000),
       flags: [
         t === "Tax Default" ? "Tax delinquent" :
         t.toLowerCase(),
