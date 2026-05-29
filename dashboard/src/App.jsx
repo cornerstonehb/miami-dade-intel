@@ -5574,8 +5574,8 @@ export default function MiamiDadePropertyIntel() {
               <SidebarItem icon={Layers} label="All" count={totals.total} active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} iconColor="#64748b" />
               <SidebarItem icon={UserCircle} label="Deceased" count={totals.byOwnerStatus["Deceased"]} active={ownerStatusFilter.includes("Deceased")} onClick={() => setOwnerStatusFilter(["Deceased"])} iconColor="#16a34a" />
               <SidebarItem icon={UserCircle} label="Deceased/2nd Owner" count={totals.byOwnerStatus["Deceased/2nd Owner"]} active={ownerStatusFilter.includes("Deceased/2nd Owner")} onClick={() => setOwnerStatusFilter(["Deceased/2nd Owner"])} iconColor="#7c3aed" />
-              <SidebarItem icon={UserCircle} label="LE / REM" count={totals.byOwnerStatus["LE / REM"]} active={ownerStatusFilter.includes("LE / REM")} onClick={() => setOwnerStatusFilter(["LE / REM"])} iconColor="#f59e0b" />
               <SidebarItem icon={UserCircle} label="Possible Deceased" count={totals.byOwnerStatus["Possible Deceased"]} active={ownerStatusFilter.includes("Possible Deceased")} onClick={() => setOwnerStatusFilter(["Possible Deceased"])} iconColor="#0891b2" />
+              <SidebarItem icon={UserCircle} label="LE / REM" count={totals.byOwnerStatus["LE / REM"]} active={ownerStatusFilter.includes("LE / REM")} onClick={() => setOwnerStatusFilter(["LE / REM"])} iconColor="#f59e0b" />
             </div>
             <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>PA TAGS</div>
             <div className="space-y-1">
@@ -6299,8 +6299,8 @@ export default function MiamiDadePropertyIntel() {
                   <Chip active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} label="Any" />
                   <Chip active={ownerStatusFilter.includes("Deceased")}           onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased")}           label="Deceased" color="#16a34a" />
                   <Chip active={ownerStatusFilter.includes("Deceased/2nd Owner")} onClick={() => toggleArrFilter(setOwnerStatusFilter, "Deceased/2nd Owner")} label="Deceased/2nd Owner" color="#7c3aed" />
-                  <Chip active={ownerStatusFilter.includes("LE / REM")}         onClick={() => toggleArrFilter(setOwnerStatusFilter, "LE / REM")}         label="LE / REM" color="#f59e0b" />
                   <Chip active={ownerStatusFilter.includes("Possible Deceased")}  onClick={() => toggleArrFilter(setOwnerStatusFilter, "Possible Deceased")}  label="Possible Deceased" color="#0891b2" />
+                  <Chip active={ownerStatusFilter.includes("LE / REM")}         onClick={() => toggleArrFilter(setOwnerStatusFilter, "LE / REM")}         label="LE / REM" color="#f59e0b" />
                 </Section>
 
                 <Section title="ABSENTEE OWNER">
