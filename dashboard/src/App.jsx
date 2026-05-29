@@ -3188,14 +3188,23 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   // long-held property under an AP claim is the cleanest specialty deal.
   { key: "Adverse Possession EST OF", shortLabel: "EST OF", type: "Adverse Possession", tag: "EST OF", family: "Adverse Possession" },
   { key: "Adverse Possession Possible EST OF", shortLabel: "Possible EST OF", type: "Adverse Possession", tag: "Possible EST OF", family: "Adverse Possession" },
-  // Prop Liens × estate-tag intersections — lien-burdened estate property
+  // Property Liens × estate-tag intersections — lien-burdened estate property
   // where heirs need to clean up title before sale.
-  { key: "Prop Liens <$50K EST OF", shortLabel: "EST OF", type: "Liens", tag: "EST OF", family: "Prop Liens <$50K", parentFamily: "Liens", tier: "<$50K" },
-  { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible EST OF", type: "Liens", tag: "Possible EST OF", family: "Prop Liens <$50K", parentFamily: "Liens", tier: "<$50K" },
-  { key: "Prop Liens $50-100K EST OF", shortLabel: "EST OF", type: "Liens", tag: "EST OF", family: "Prop Liens $50-100K", parentFamily: "Liens", tier: "$50-100K" },
-  { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible EST OF", type: "Liens", tag: "Possible EST OF", family: "Prop Liens $50-100K", parentFamily: "Liens", tier: "$50-100K" },
-  { key: "Prop Liens $100K+ EST OF", shortLabel: "EST OF", type: "Liens", tag: "EST OF", family: "Prop Liens $100K+", parentFamily: "Liens", tier: "$100K+" },
-  { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible EST OF", type: "Liens", tag: "Possible EST OF", family: "Prop Liens $100K+", parentFamily: "Liens", tier: "$100K+" },
+  { key: "Prop Liens <$50K EST OF", shortLabel: "EST OF", type: "Property Liens", tag: "EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
+  { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible EST OF", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
+  { key: "Prop Liens $50-100K EST OF", shortLabel: "EST OF", type: "Property Liens", tag: "EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
+  { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible EST OF", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
+  { key: "Prop Liens $100K+ EST OF", shortLabel: "EST OF", type: "Property Liens", tag: "EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
+  { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible EST OF", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
+  // Federal Tax Liens × estate-tag intersections.
+  { key: "Federal Tax Liens EST OF", shortLabel: "EST OF", type: "Federal Tax Liens", tag: "EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
+  { key: "Federal Tax Liens Possible EST OF", shortLabel: "Possible EST OF", type: "Federal Tax Liens", tag: "Possible EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
+  // Other Liens × estate-tag intersections.
+  { key: "Other Liens EST OF", shortLabel: "EST OF", type: "Other Liens", tag: "EST OF", family: "Other Liens", parentFamily: "Other Liens" },
+  { key: "Other Liens Possible EST OF", shortLabel: "Possible EST OF", type: "Other Liens", tag: "Possible EST OF", family: "Other Liens", parentFamily: "Other Liens" },
+  // Judgments × estate-tag intersections.
+  { key: "Judgments EST OF", shortLabel: "EST OF", type: "Judgments", tag: "EST OF", family: "Judgments", parentFamily: "Judgments" },
+  { key: "Judgments Possible EST OF", shortLabel: "Possible EST OF", type: "Judgments", tag: "Possible EST OF", family: "Judgments", parentFamily: "Judgments" },
 ];
 
 const TYPE_COLOR = Object.fromEntries(LEAD_TYPES.map((t) => [t.key, t.color]));
@@ -4573,8 +4582,17 @@ export default function MiamiDadePropertyIntel() {
         if (typeTagIntersection.outcome) {
           return r.auctionData?.outcome === typeTagIntersection.outcome;
         }
-        if (typeTagIntersection.parentFamily === "Liens") {
+        if (typeTagIntersection.parentFamily === "Property Liens") {
           return r.liens.some(l => l.tier === typeTagIntersection.tier) && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
+        }
+        if (typeTagIntersection.parentFamily === "Federal Tax Liens") {
+          return hasListType(r, "Federal Tax Liens") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
+        }
+        if (typeTagIntersection.parentFamily === "Other Liens") {
+          return hasListType(r, "Other Liens") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
+        }
+        if (typeTagIntersection.parentFamily === "Judgments") {
+          return hasListType(r, "Judgments") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
         }
         const tag = typeTagIntersection.tag;
         if (tag === "__OTHER__") {
@@ -4851,8 +4869,14 @@ export default function MiamiDadePropertyIntel() {
           matches = r.probateStatus === it.probateStatus;
         } else if (it.tag === "__OTHER__") {
           matches = !r.estateTag || !ESTATE_TAG_KEYS.includes(r.estateTag);
-        } else if (it.parentFamily === "Liens") {
+        } else if (it.parentFamily === "Property Liens") {
           matches = r.liens.some(l => l.tier === it.tier) && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[it.tag]);
+        } else if (it.parentFamily === "Federal Tax Liens") {
+          matches = hasListType(r, "Federal Tax Liens") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[it.tag]);
+        } else if (it.parentFamily === "Other Liens") {
+          matches = hasListType(r, "Other Liens") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[it.tag]);
+        } else if (it.parentFamily === "Judgments") {
+          matches = hasListType(r, "Judgments") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[it.tag]);
         } else {
           matches = r.estateTag === it.tag || (Array.isArray(r.paTags) && r.paTags.includes(it.tag));
         }
@@ -5348,7 +5372,10 @@ export default function MiamiDadePropertyIntel() {
                         const isActive = typeTagIntersection?.type === it.type && (
                           it.probateStatus ? typeTagIntersection?.probateStatus === it.probateStatus
                           : it.outcome ? typeTagIntersection?.outcome === it.outcome
-                          : it.parentFamily === "Liens" ? (typeTagIntersection?.tier === it.tier && typeTagIntersection?.tag === it.tag)
+                          : it.parentFamily === "Property Liens" ? (typeTagIntersection?.tier === it.tier && typeTagIntersection?.tag === it.tag)
+                          : it.parentFamily === "Federal Tax Liens" ? (typeTagIntersection?.tag === it.tag)
+                          : it.parentFamily === "Other Liens" ? (typeTagIntersection?.tag === it.tag)
+                          : it.parentFamily === "Judgments" ? (typeTagIntersection?.tag === it.tag)
                           : typeTagIntersection?.tag === it.tag
                         );
                         return (
@@ -5363,9 +5390,15 @@ export default function MiamiDadePropertyIntel() {
                                     ? { type: it.type, probateStatus: it.probateStatus }
                                     : it.outcome
                                       ? { type: it.type, outcome: it.outcome }
-                                      : it.parentFamily === "Liens"
+                                      : it.parentFamily === "Property Liens"
                                         ? { type: it.type, tier: it.tier, tag: it.tag }
-                                        : { type: it.type, tag: it.tag }
+                                        : it.parentFamily === "Federal Tax Liens"
+                                          ? { type: it.type, tag: it.tag }
+                                          : it.parentFamily === "Other Liens"
+                                            ? { type: it.type, tag: it.tag }
+                                            : it.parentFamily === "Judgments"
+                                              ? { type: it.type, tag: it.tag }
+                                              : { type: it.type, tag: it.tag }
                                 );
                                 setActiveType([]); // intersection supersedes type
                                 // Outcome intersections cross-cut with the AUCTION OUTCOME
