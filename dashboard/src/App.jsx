@@ -2975,6 +2975,18 @@ const LIST_TYPE_PRIORITY = Object.fromEntries(
   LIST_TYPE_NAMES.map((name, idx) => [name, idx])
 );
 
+// Lien-family parent blocks for the 2.7d 4-parent-block sidebar render.
+// Each entry drives one of the four parent sections (PROPERTY LIENS,
+// FEDERAL TAX LIENS, OTHER LIENS, JUDGMENTS). Property Liens has tier
+// sub-sections; the other three have only estate-tag leaves. Counts come
+// from totals.byListType[name] at render time.
+const LIEN_PARENT_BLOCKS = [
+  { name: "Property Liens",    icon: AlertCircle, color: "#2563eb", tiers: ["<$50K", "$50-100K", "$100K+"] },
+  { name: "Federal Tax Liens", icon: AlertCircle, color: "#7f1d1d", tiers: null },
+  { name: "Other Liens",       icon: AlertCircle, color: "#475569", tiers: null },
+  { name: "Judgments",         icon: Landmark,    color: "#7c3aed", tiers: null },
+];
+
 // Legacy lead.estateTag → new Deceased-family List name.
 // estateTag is being retired in favor of explicit Deceased-family List memberships.
 const ESTATE_TAG_TO_LIST_TYPE = {
@@ -4571,7 +4583,7 @@ export default function MiamiDadePropertyIntel() {
           return r.auctionData?.outcome === typeTagIntersection.outcome;
         }
         if (typeTagIntersection.parentFamily === "Property Liens") {
-          return r.liens.some(l => l.tier === typeTagIntersection.tier) && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
+          return r.liens.some(l => l.tier === typeTagIntersection.tier) && (typeTagIntersection.tag == null || hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]));
         }
         if (typeTagIntersection.parentFamily === "Federal Tax Liens") {
           return hasListType(r, "Federal Tax Liens") && hasListType(r, ESTATE_TAG_TO_LIST_TYPE[typeTagIntersection.tag]);
@@ -4752,6 +4764,8 @@ export default function MiamiDadePropertyIntel() {
       newMlsActive: 0,      // MLS-Active with mlsListDate in past 7 days (last MLS import batch)
     };
     const byType = LEAD_TYPES.reduce((acc, t) => { acc[t.key] = 0; return acc; }, {});
+    const byListType = LIST_TYPE_NAMES.reduce((acc, name) => { acc[name] = 0; return acc; }, {});
+    const byPropLienTier = { "<$50K": 0, "$50-100K": 0, "$100K+": 0 };
     const byMls = { Active: 0, Pending: 0, "Came Back": 0, Expired: 0, Canceled: 0, "Off-Market": 0, "Active DOM 90+": 0 };
     const byOwnerStatus = { "Deceased": 0, "Deceased/2nd Owner": 0, "LE / REM": 0, "Possible Deceased": 0 };
     const byPaTag = { "Senior": 0, "Widow/Widower": 0, "Homestead Penalty": 0 };
@@ -4812,6 +4826,16 @@ export default function MiamiDadePropertyIntel() {
         if (!isNaN(listDate) && listDate >= sevenDaysAgo) t.newMlsActive++;
       }
       if (byType[r.type] !== undefined) byType[r.type]++;
+      if (Array.isArray(r.listTypes)) {
+        r.listTypes.forEach((lt) => {
+          if (byListType[lt.name] !== undefined) byListType[lt.name]++;
+        });
+      }
+      if (Array.isArray(r.liens) && hasListType(r, "Property Liens")) {
+        r.liens.forEach((l) => {
+          if (byPropLienTier[l.tier] !== undefined) byPropLienTier[l.tier]++;
+        });
+      }
       if (byMls[r.mlsStatus] !== undefined) byMls[r.mlsStatus]++;
       // Long-DOM Active sub-count — overlaps with the regular Active count
       // (a lead can be both "Active" AND "Active DOM 90+"). Same approach as
@@ -4897,7 +4921,7 @@ export default function MiamiDadePropertyIntel() {
         }
       }
     }
-    return { ...t, byType, byMls, byOwnerStatus, byPaTag, byAbsentee, possiblePiCount, possiblePaceCount, reverseMortgageCount, codeViolationsCount, codeViolationCategoryCounts, importSourceCounts, byVerdict, auctionUrgencyCounts, auctionOutcomeCounts, typeTagIntersectionCounts, conditionTagCounts };
+    return { ...t, byType, byListType, byPropLienTier, byMls, byOwnerStatus, byPaTag, byAbsentee, possiblePiCount, possiblePaceCount, reverseMortgageCount, codeViolationsCount, codeViolationCategoryCounts, importSourceCounts, byVerdict, auctionUrgencyCounts, auctionOutcomeCounts, typeTagIntersectionCounts, conditionTagCounts };
   }, [jurisdictionScoped, recognizedLeads, jurisdictionFilter]);
 
   // Jurisdiction picker options — every city in the authoritative table,
@@ -5412,6 +5436,95 @@ export default function MiamiDadePropertyIntel() {
                   );
                 });
               })()}
+              {/* 2.7d: Lien-family 4-parent-block render. Each parent has
+                  estate-tag leaves; Property Liens additionally has tier
+                  sub-sections between parent and leaves. All levels clickable. */}
+              {LIEN_PARENT_BLOCKS.map((block) => {
+                const blockIntersections = LEAD_TYPE_TAG_INTERSECTIONS.filter(
+                  (it) => it.parentFamily === block.name
+                );
+                return (
+                  <React.Fragment key={block.name}>
+                    <SidebarItem
+                      icon={block.icon}
+                      label={block.name}
+                      count={totals.byListType[block.name] || 0}
+                      active={activeType.includes(block.name) && !typeTagIntersection}
+                      onClick={() => { setActiveType([block.name]); setTypeTagIntersection(null); }}
+                      iconColor={block.color}
+                    />
+                    {block.tiers && block.tiers.map((tier) => {
+                      const tierActive = typeTagIntersection?.type === block.name
+                        && typeTagIntersection?.tier === tier
+                        && typeTagIntersection?.tag == null;
+                      const tierLeaves = blockIntersections.filter((it) => it.tier === tier);
+                      return (
+                        <React.Fragment key={`${block.name}-${tier}`}>
+                          <button
+                            onClick={() => {
+                              setTypeTagIntersection({ type: block.name, parentFamily: block.name, tier, tag: null });
+                              setActiveType([]);
+                            }}
+                            className="w-full flex items-center gap-2 pl-6 pr-3 py-1 rounded-lg text-[11px] font-semibold transition"
+                            style={{
+                              background: tierActive ? "#2563eb" : "transparent",
+                              color: tierActive ? "white" : "#475569",
+                            }}
+                          >
+                            <span className="flex-1 text-left truncate">{tier}</span>
+                            <span className="text-[10px] font-bold opacity-80">{fmtCount(totals.byPropLienTier[tier] || 0)}</span>
+                          </button>
+                          {tierLeaves.map((it) => {
+                            const isActive = typeTagIntersection?.type === it.type
+                              && typeTagIntersection?.tier === it.tier
+                              && typeTagIntersection?.tag === it.tag;
+                            return (
+                              <button
+                                key={it.key}
+                                onClick={() => {
+                                  setTypeTagIntersection({ type: it.type, parentFamily: it.parentFamily, tier: it.tier, tag: it.tag });
+                                  setActiveType([]);
+                                }}
+                                className="w-full flex items-center gap-2 pl-10 pr-3 py-1 rounded-lg text-[11px] font-medium transition"
+                                style={{
+                                  background: isActive ? "#2563eb" : "transparent",
+                                  color: isActive ? "white" : "#64748b",
+                                }}
+                              >
+                                <span className="text-[10px] opacity-70">◦</span>
+                                <span className="flex-1 text-left truncate">{it.shortLabel}</span>
+                                <span className="text-[10px] font-bold opacity-80">{fmtCount(totals.typeTagIntersectionCounts[it.key] || 0)}</span>
+                              </button>
+                            );
+                          })}
+                        </React.Fragment>
+                      );
+                    })}
+                    {!block.tiers && blockIntersections.map((it) => {
+                      const isActive = typeTagIntersection?.type === it.type
+                        && typeTagIntersection?.tag === it.tag;
+                      return (
+                        <button
+                          key={it.key}
+                          onClick={() => {
+                            setTypeTagIntersection({ type: it.type, parentFamily: it.parentFamily, tag: it.tag });
+                            setActiveType([]);
+                          }}
+                          className="w-full flex items-center gap-2 pl-8 pr-3 py-1 rounded-lg text-[11px] font-medium transition"
+                          style={{
+                            background: isActive ? "#2563eb" : "transparent",
+                            color: isActive ? "white" : "#64748b",
+                          }}
+                        >
+                          <span className="text-[10px] opacity-70">◦</span>
+                          <span className="flex-1 text-left truncate">{it.shortLabel}</span>
+                          <span className="text-[10px] font-bold opacity-80">{fmtCount(totals.typeTagIntersectionCounts[it.key] || 0)}</span>
+                        </button>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
             </div>
 
             {/* CODE VIOLATIONS — live ArcGIS REST API integration (sidebar filters) */}
