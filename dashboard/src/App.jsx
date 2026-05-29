@@ -474,7 +474,7 @@ const seedLeads = [
 // Generate additional realistic records to reach a believable total
 function generateExtraLeads(base) {
   const extras = [];
-  const types = ["Tax Default", "PFC Auction", "Pre-Foreclosure", "Prop Liens <$50K", "Prop Liens $50-100K", "Prop Liens $100K+", "Federal Tax Lien", "Other Liens", "Judgment", "Probate"];
+  const types = ["Tax Default", "PFC Auction", "Pre-Foreclosure", "Probate"];
   // Each entry: [city, zip, folio prefix matching the municipality]
   const cities = [
     ["MIAMI", "33125", "01"],
@@ -537,9 +537,6 @@ function generateExtraLeads(base) {
       })(),
       flags: [
         t === "Tax Default" ? "Tax delinquent" :
-        t.startsWith("Prop Liens") ? "Prop Lien" :
-        t === "Federal Tax Lien" ? "Federal tax lien (NFTL)" :
-        t === "Other Liens" ? "State/judgment lien" :
         t.toLowerCase(),
       ],
       equity: ["LOW", "MEDIUM", "HIGH"][i % 3],
@@ -2889,15 +2886,6 @@ const LEAD_TYPES = [
   { key: "Probate", family: "Probate", icon: UserCircle, color: "#16a34a" },
   // Adverse Possession — moved up from PA Tag because it's its own pursuit category
   { key: "Adverse Possession", family: "Adverse Possession", icon: Star, color: "#9333ea" },
-  // Judgment
-  { key: "Judgment", family: "Judgment", icon: Landmark, color: "#7c3aed" },
-  // Liens — split into three by source/category. Prop Liens further
-  // tiered by amount (assigned at import time, not auto-recomputed).
-  { key: "Federal Tax Lien", family: "Liens", icon: AlertCircle, color: "#7f1d1d" },
-  { key: "Prop Liens <$50K", family: "Liens", icon: AlertCircle, color: "#60a5fa" },
-  { key: "Prop Liens $50-100K", family: "Liens", icon: AlertCircle, color: "#2563eb" },
-  { key: "Prop Liens $100K+", family: "Liens", icon: AlertCircle, color: "#1e3a8a" },
-  { key: "Other Liens", family: "Liens", icon: AlertCircle, color: "#475569" },
 ];
 
 // Property Lien tier classification — used in two paths:
@@ -5575,11 +5563,11 @@ export default function MiamiDadePropertyIntel() {
                 </div>
                 <FilterTab label="All Scores" count={fmtCount(totals.total)} active={activeType.length === 0 && !typeTagIntersection && ownerStatusFilter.length === 0} onClick={() => { setActiveType([]); setTypeTagIntersection(null); setOwnerStatusFilter([]); }} />
                 {/* Lead-type pills + their EST OF / Possible EST OF intersections.
-                    The 7 removed types (Inherited Probate, Inherited QCD, Pre-Foreclosure,
-                    Tax Default, Judgment, Federal Tax Lien, Other Liens) are still in
-                    LEAD_TYPES and remain available via the sidebar — they're just not
-                    surfaced in this fast-action pill row. */}
-                {LEAD_TYPES.filter((t) => ["Tax Deed Auction", "Tax Deed", "PFC Auction", "Probate", "Adverse Possession", "Prop Liens <$50K", "Prop Liens $50-100K", "Prop Liens $100K+"].includes(t.key)).map((t) => {
+                    The fast-action pill row surfaces the most common
+                    investigation-worthy types. Other types (Inherited Probate,
+                    Inherited QCD, Pre-Foreclosure, Tax Default, lien families)
+                    remain available via the sidebar. */}
+                {LEAD_TYPES.filter((t) => ["Tax Deed Auction", "Tax Deed", "PFC Auction", "Probate", "Adverse Possession"].includes(t.key)).map((t) => {
                   const baseActive = activeType.includes(t.key) && !typeTagIntersection && ownerStatusFilter.length === 0;
                   const estOfKey = `${t.key} EST OF`;
                   const possEstKey = `${t.key} Possible EST OF`;
