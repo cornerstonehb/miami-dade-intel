@@ -5299,7 +5299,7 @@ export default function MiamiDadePropertyIntel() {
               />
               <SidebarItem
                 icon={AlertCircle}
-                label="Cancelled — BK ★"
+                label="Cancelled — BK"
                 count={totals.auctionOutcomeCounts.cancelled_bk}
                 active={auctionOutcomeFilter === "cancelled_bk"}
                 onClick={() => {
@@ -5311,22 +5311,52 @@ export default function MiamiDadePropertyIntel() {
                     if (typeTagIntersection?.outcome) setTypeTagIntersection(null);
                   }
                 }}
-                iconColor="#92400e"
+                iconColor="#14532d"
               />
               <SidebarItem
-                icon={X}
-                label="Cancelled — Other"
-                count={totals.auctionOutcomeCounts.cancelled_other}
-                active={auctionOutcomeFilter === "cancelled_other"}
+                icon={AlertCircle}
+                label="Cancelled — County"
+                count={totals.auctionOutcomeCounts.cancelled_county}
+                active={auctionOutcomeFilter === "cancelled_county"}
                 onClick={() => {
-                  if (auctionOutcomeFilter === "cancelled_other") {
+                  if (auctionOutcomeFilter === "cancelled_county") {
                     setAuctionOutcomeFilter(null);
                   } else {
-                    setAuctionOutcomeFilter("cancelled_other");
+                    setAuctionOutcomeFilter("cancelled_county");
                     if (typeTagIntersection?.outcome) setTypeTagIntersection(null);
                   }
                 }}
-                iconColor="#1e40af"
+                iconColor="#14532d"
+              />
+              <SidebarItem
+                icon={X}
+                label="Buyer Walked"
+                count={totals.auctionOutcomeCounts.buyer_walked}
+                active={auctionOutcomeFilter === "buyer_walked"}
+                onClick={() => {
+                  if (auctionOutcomeFilter === "buyer_walked") {
+                    setAuctionOutcomeFilter(null);
+                  } else {
+                    setAuctionOutcomeFilter("buyer_walked");
+                    if (typeTagIntersection?.outcome) setTypeTagIntersection(null);
+                  }
+                }}
+                iconColor="#14532d"
+              />
+              <SidebarItem
+                icon={Home}
+                label="Redeemed by Owner"
+                count={totals.auctionOutcomeCounts.redeemed}
+                active={auctionOutcomeFilter === "redeemed"}
+                onClick={() => {
+                  if (auctionOutcomeFilter === "redeemed") {
+                    setAuctionOutcomeFilter(null);
+                  } else {
+                    setAuctionOutcomeFilter("redeemed");
+                    if (typeTagIntersection?.outcome) setTypeTagIntersection(null);
+                  }
+                }}
+                iconColor="#92400e"
               />
               <SidebarItem
                 icon={Gavel}
@@ -5343,7 +5373,7 @@ export default function MiamiDadePropertyIntel() {
                     if (viewMode === "active") setViewMode("sold");
                   }
                 }}
-                iconColor="#475569"
+                iconColor="#991b1b"
               />
             </div>
             <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>LEAD TYPES</div>
