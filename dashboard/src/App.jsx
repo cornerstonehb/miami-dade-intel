@@ -5913,9 +5913,11 @@ export default function MiamiDadePropertyIntel() {
                             // Completed auctions show outcome label
                             if (ad.outcome) {
                               const outMeta = {
-                                cancelled_bk:    { label: "CANCELLED · BK",  color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
-                                cancelled_other: { label: "CANCELLED",       color: "#1e40af", bg: "#dbeafe", border: "#bfdbfe" },
-                                sold:            { label: "SOLD",             color: "#475569", bg: "#f1f5f9", border: "#cbd5e1" },
+                                cancelled_bk:     { label: "CANCELLED · BK",     color: "#14532d", bg: "#bbf7d0", border: "#86efac" },
+                                cancelled_county: { label: "CANCELLED · COUNTY", color: "#14532d", bg: "#bbf7d0", border: "#86efac" },
+                                buyer_walked:     { label: "BUYER WALKED",       color: "#14532d", bg: "#bbf7d0", border: "#86efac" },
+                                redeemed:         { label: "REDEEMED",           color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
+                                sold:             { label: "SOLD",               color: "#991b1b", bg: "#fee2e2", border: "#fecaca" },
                               }[ad.outcome] || { label: ad.outcome.toUpperCase(), color: "#475569", bg: "#f1f5f9", border: "#cbd5e1" };
                               return (
                                 <div>
@@ -7631,9 +7633,11 @@ function AuctionDataPanel({ lead, onUpdate }) {
   // Outcome takes precedence over PURSUE/PASS verdict — once an auction has
   // happened, the verdict is moot; the outcome is what matters.
   const outcomeMeta = ad.outcome ? {
-    cancelled_bk:    { label: "CANCELLED — BANKRUPTCY",  bg: "#fef3c7", border: "#fde68a", color: "#92400e" },
-    cancelled_other: { label: "CANCELLED — OTHER",       bg: "#dbeafe", border: "#bfdbfe", color: "#1e40af" },
-    sold:            { label: "SOLD AT AUCTION",          bg: "#f1f5f9", border: "#cbd5e1", color: "#475569" },
+    cancelled_bk:     { label: "CANCELLED — BANKRUPTCY", bg: "#bbf7d0", border: "#86efac", color: "#14532d" },
+    cancelled_county: { label: "CANCELLED — COUNTY",     bg: "#bbf7d0", border: "#86efac", color: "#14532d" },
+    buyer_walked:     { label: "BUYER WALKED AWAY",      bg: "#bbf7d0", border: "#86efac", color: "#14532d" },
+    redeemed:         { label: "REDEEMED BY OWNER",      bg: "#fef3c7", border: "#fde68a", color: "#92400e" },
+    sold:             { label: "SOLD AT AUCTION",        bg: "#fee2e2", border: "#fecaca", color: "#991b1b" },
   }[ad.outcome] : null;
 
   const verdictBg = outcomeMeta ? outcomeMeta.bg : (ad.verdict === "PURSUE" ? "#f0fdf4" : "#fef2f2");
