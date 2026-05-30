@@ -4236,7 +4236,7 @@ export default function MiamiDadePropertyIntel() {
   // block — see "Filter state" comment above.)
   // Cross-family auction outcome filter — matches lead.auctionData.outcome
   // regardless of which auction family the lead came from.
-  const [auctionOutcomeFilter, setAuctionOutcomeFilter] = useState(null); // 'cancelled_bk' | 'cancelled_other' | 'sold' | null
+  const [auctionOutcomeFilter, setAuctionOutcomeFilter] = useState(null); // 'cancelled_bk' | 'cancelled_county' | 'buyer_walked' | 'redeemed' | 'sold' | null
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("score");
   const [sortDir, setSortDir] = useState("desc");
@@ -4782,7 +4782,7 @@ export default function MiamiDadePropertyIntel() {
     const auctionUrgencyCounts = { lte30: 0, "31to60": 0, gte61: 0 };
     // Cross-family outcome counts. Counted from the lead's auction outcome
     // regardless of which family (Tax Deed Auction or PFC Auction) it belongs to.
-    const auctionOutcomeCounts = { cancelled_bk: 0, cancelled_other: 0, sold: 0 };
+    const auctionOutcomeCounts = { cancelled_bk: 0, cancelled_county: 0, buyer_walked: 0, redeemed: 0, sold: 0 };
     // Counts for virtual "Type + Tag" intersection rows (e.g. "Tax Deed EST OF")
     const typeTagIntersectionCounts = {};
     LEAD_TYPE_TAG_INTERSECTIONS.forEach((it) => { typeTagIntersectionCounts[it.key] = 0; });
