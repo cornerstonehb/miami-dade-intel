@@ -3151,8 +3151,10 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "Tax Deed Auction Other", shortLabel: "Other", type: "Tax Deed Auction", tag: "__OTHER__", family: "Tax Deed Auction" },
   // Tax Deed Auction outcomes
   { key: "Tax Deed Auction Cancelled BK", shortLabel: "Cancelled — BK", type: "Tax Deed Auction", outcome: "cancelled_bk", family: "Tax Deed Auction" },
-  { key: "Tax Deed Auction Cancelled Other", shortLabel: "Cancelled — Other", type: "Tax Deed Auction", outcome: "cancelled_other", family: "Tax Deed Auction" },
-  { key: "Tax Deed Auction Sold", shortLabel: "Sold", type: "Tax Deed Auction", outcome: "sold", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction Cancelled County", shortLabel: "Cancelled — County", type: "Tax Deed Auction", outcome: "cancelled_county", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction Buyer Walked", shortLabel: "Buyer Walked", type: "Tax Deed Auction", outcome: "buyer_walked", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction Redeemed", shortLabel: "Redeemed by Owner", type: "Tax Deed Auction", outcome: "redeemed", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction Sold", shortLabel: "Sold at Auction", type: "Tax Deed Auction", outcome: "sold", family: "Tax Deed Auction" },
   // Tax Deed family (case filed, no auction yet)
   { key: "Tax Deed EST OF", shortLabel: "Deceased", type: "Tax Deed", tag: "EST OF", family: "Tax Deed" },
   { key: "Tax Deed Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Deed", tag: "Possible EST OF", family: "Tax Deed" },
@@ -3163,8 +3165,10 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "PFC Auction Other", shortLabel: "Other", type: "PFC Auction", tag: "__OTHER__", family: "Pre-Foreclosure Auction" },
   // PFC Auction outcomes
   { key: "PFC Auction Cancelled BK", shortLabel: "Cancelled — BK", type: "PFC Auction", outcome: "cancelled_bk", family: "Pre-Foreclosure Auction" },
-  { key: "PFC Auction Cancelled Other", shortLabel: "Cancelled — Other", type: "PFC Auction", outcome: "cancelled_other", family: "Pre-Foreclosure Auction" },
-  { key: "PFC Auction Sold", shortLabel: "Sold", type: "PFC Auction", outcome: "sold", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction Cancelled County", shortLabel: "Cancelled — County", type: "PFC Auction", outcome: "cancelled_county", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction Buyer Walked", shortLabel: "Buyer Walked", type: "PFC Auction", outcome: "buyer_walked", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction Redeemed", shortLabel: "Redeemed by Owner", type: "PFC Auction", outcome: "redeemed", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction Sold", shortLabel: "Sold at Auction", type: "PFC Auction", outcome: "sold", family: "Pre-Foreclosure Auction" },
   // Pre-Foreclosure family
   { key: "PFC EST OF", shortLabel: "Deceased", type: "Pre-Foreclosure", tag: "EST OF", family: "Pre-Foreclosure" },
   { key: "PFC Possible EST OF", shortLabel: "Possible Deceased", type: "Pre-Foreclosure", tag: "Possible EST OF", family: "Pre-Foreclosure" },
