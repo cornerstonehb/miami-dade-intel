@@ -1491,12 +1491,14 @@ function applyAuctionData(leads) {
 
     // Auction date and outcome assignment.
     // ~70% of auction-bound leads stay PENDING (auction is in the future).
-    // ~30% have already happened with one of three outcomes:
-    //   - cancelled_bk    (bankruptcy automatic stay halted the auction)
-    //   - cancelled_other (loan reinstated, sold pre-auction, owner cured, etc.)
-    //   - sold            (property went to a third party at auction)
+    // ~30% have already happened with one of five terminal outcomes:
+    //   - cancelled_bk     (bankruptcy automatic stay halted the auction)
+    //   - cancelled_county (county action — procedural cancellation, often reschedules)
+    //   - buyer_walked     (winning bidder failed to complete the purchase)
+    //   - redeemed         (owner paid off the certificate before sale — Tax Deed specific)
+    //   - sold             (property went to a third party at auction)
     // For sold outcomes, soldAt is also set since the deed transferred.
-    // For cancelled outcomes, the lead stays in active view — the underlying
+    // For other outcomes, the lead stays in active view — the underlying
     // motivation that put them in foreclosure is usually still present.
     let auctionDate, outcome = null, soldAt = lead.soldAt, soldDeedType = lead.soldDeedType;
     const outcomeRoll = rand();
@@ -1506,11 +1508,11 @@ function applyAuctionData(leads) {
       auctionDate = new Date(2026, 4, 7 + daysOut).toISOString().slice(0, 10);
     } else {
       // Completed: past auction date, 5-90 days ago
-      const daysAgo = Math.floor(5 + rand() * 85);
-      auctionDate = new Date(2026, 4, 7 - daysAgo).toISOString().slice(0, 10);
       const outcomeSubRoll = rand();
-      if (outcomeSubRoll < 0.25) outcome = "cancelled_bk";
-      else if (outcomeSubRoll < 0.60) outcome = "cancelled_other";
+      if (outcomeSubRoll < 0.20) outcome = "cancelled_bk";
+      else if (outcomeSubRoll < 0.40) outcome = "cancelled_county";
+      else if (outcomeSubRoll < 0.50) outcome = "buyer_walked";
+      else if (outcomeSubRoll < 0.60) outcome = "redeemed";
       else {
         outcome = "sold";
         soldAt = auctionDate;
