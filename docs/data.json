@@ -44,6 +44,69 @@
         "POSS PI"
       ],
       "mlsStatus": "Off-Market"
+    },
+    {
+      "folio": "30-1234-001-0010",
+      "propertyAddress": "9419 FONTAINEBLEAU BLVD",
+      "ownerName": "SMITH JOHN",
+      "mailingAddress": "9419 FONTAINEBLEAU BLVD, MIAMI, FL, 33172",
+      "useCode": "0101",
+      "totalTax": "5234.56",
+      "balanceAmount": "5234.56",
+      "accountStatus": "DELINQUENT",
+      "certStatus": "ACTIVE",
+      "deedStatus": "NONE",
+      "rollYear": "2025",
+      "taxYear": "2024",
+      "listTypes": [
+        {
+          "name": "Tax Default",
+          "source": "tax-collector-csv"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "folio": "03-5555-005-0050",
+      "propertyAddress": "123 PALMETTO AVE",
+      "ownerName": "GARCIA LUIS",
+      "mailingAddress": "123 PALMETTO AVE, CORAL GABLES, FL, 33134",
+      "useCode": "0101",
+      "totalTax": "3456.78",
+      "balanceAmount": "3456.78",
+      "accountStatus": "DELINQUENT",
+      "certStatus": "ACTIVE",
+      "deedStatus": "NONE",
+      "rollYear": "2025",
+      "taxYear": "2024",
+      "listTypes": [
+        {
+          "name": "Tax Default",
+          "source": "tax-collector-csv"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "folio": "30-7777-007-0070",
+      "propertyAddress": "800 NW 100 ST",
+      "ownerName": "DOE JANE",
+      "mailingAddress": "800 NW 100 ST, MIAMI, FL, 33150",
+      "useCode": "0101",
+      "totalTax": "2100.00",
+      "balanceAmount": "2100.00",
+      "accountStatus": "DELINQUENT",
+      "certStatus": "ACTIVE",
+      "deedStatus": "NONE",
+      "rollYear": "2025",
+      "taxYear": "2024",
+      "listTypes": [
+        {
+          "name": "Tax Default",
+          "source": "tax-collector-csv"
+        }
+      ],
+      "flags": []
     }
   ]
 }
