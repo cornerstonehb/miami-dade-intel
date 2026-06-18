@@ -723,7 +723,7 @@ function seedDeeds(leads) {
 
     let deedType, grantee, action, salePrice, docStamps;
 
-    if (lead.type === "Probate") {
+    if (hasListType(lead, "Probate")) {
       // 60% PR Deed of Distribution to heirs (no consideration), 40% PR sale to 3rd party
       const isHeirDistribution = rand() < 0.6;
       deedType = "PRD";
@@ -740,14 +740,14 @@ function seedDeeds(leads) {
         salePrice = Math.round((150000 + rand() * 500000) / 1000) * 1000;
         docStamps = Math.round(salePrice * FL_DOC_STAMP_RATE * 100) / 100;
       }
-    } else if (lead.type === "PFC Auction") {
+    } else if (hasListType(lead, "PFC Auction")) {
       // Trustee's Deed / Certificate of Title from foreclosure auction
       deedType = "TD";
       grantee = ["DEUTSCHE BANK NATIONAL TRUST", "U.S. BANK NA AS TRUSTEE", "FANNIE MAE"][Math.floor(rand() * 3)];
       action = "sold";
       salePrice = lead.amount > 0 ? Math.round(lead.amount * (0.95 + rand() * 0.15)) : 200000;
       docStamps = Math.round(salePrice * FL_DOC_STAMP_RATE * 100) / 100;
-    } else if ((lead.type === "Tax Default" || lead.type === "Tax Deed") && rand() < 0.3) {
+    } else if ((hasListType(lead, "Tax Default") || hasListType(lead, "Tax Deed")) && rand() < 0.3) {
       // 30% chance the tax-delinquent property went to tax deed sale
       deedType = "TXD";
       grantee = ["BLUE WAVE PROPERTIES LLC", "HORIZON CAPITAL LLC", "SUNSHINE LAND TRUST"][Math.floor(rand() * 3)];
@@ -1029,7 +1029,7 @@ function applyEstateTags(leads) {
   return leads.map((lead) => {
     // Skip leads that are already sold (deed event closed them out) or already
     // reclassified as Inherited (the heir distribution supersedes any estate inference)
-    if (lead.soldAt || lead.type === "Inherited Probate" || lead.type === "Inherited QCD") return lead;
+    if (lead.soldAt || hasListType(lead, "Inherited Probate") || hasListType(lead, "Inherited QCD")) return lead;
 
     // Synthesize a deterministic last-sale-date if the lead doesn't have one yet.
     // In production this comes from the PA bulk data join. Mock distribution:
@@ -1443,7 +1443,7 @@ function applyAuctionData(leads) {
     if (lead.soldAt) return lead;
     // Only PFC Auction (foreclosure auction stage) and Tax Default (which may
     // get reclassified to Tax Deed below if a TD case is found) get auction data.
-    if (lead.type !== "PFC Auction" && lead.type !== "Tax Default") return lead;
+    if (!hasListType(lead, "PFC Auction") && !hasListType(lead, "Tax Default")) return lead;
 
     // Seed deterministic auction data for ~80% of these leads.
     // In production this comes from your PropertyOnion CSV import or inline entry.
@@ -1472,7 +1472,7 @@ function applyAuctionData(leads) {
 
     let finalJudgment, certificateAmount, plaintiff, caseNumber;
     let reclassifiedType = lead.type;
-    if (lead.type === "PFC Auction") {
+    if (hasListType(lead, "PFC Auction")) {
       const verdictRoll = rand();
       const fjVsPaRatio = verdictRoll < 0.55 ? 0.40 + rand() * 0.55  // PURSUE: 40-95%
                        :                       1.02 + rand() * 0.65; // PASS: 102-167%
@@ -1516,7 +1516,7 @@ function applyAuctionData(leads) {
       else {
         outcome = "sold";
         soldAt = auctionDate;
-        soldDeedType = lead.type === "Tax Deed Auction" ? "TXD" : "CDT"; // Tax Deed or Certificate of Title
+        soldDeedType = hasListType(lead, "Tax Deed Auction") ? "TXD" : "CDT"; // Tax Deed or Certificate of Title
       }
     }
 
@@ -2258,7 +2258,7 @@ const allLeadsWithCondition = applyBadConditionTags(allLeadsWithTaxMortgage);
 // ----------------------------------------------------------------------------
 function applyProbateStatus(leads) {
   return leads.map((lead) => {
-    if (lead.type !== "Probate") return lead;
+    if (!hasListType(lead, "Probate")) return lead;
     if (lead.probateStatus) return lead; // respect explicit assignment
     const rand = mulberry32(lead.id * 7321 + 11);
     const roll = rand();
@@ -2568,7 +2568,7 @@ function seedAlerts(leads) {
   });
 
   // New Lis Pendens — for each Lis Pendens lead, alert at the filed date
-  leads.filter((l) => l.type === "Pre-Foreclosure").slice(0, 3).forEach((l) => {
+  leads.filter((l) => hasListType(l, "Pre-Foreclosure")).slice(0, 3).forEach((l) => {
     alerts.push({
       id: id++,
       type: "new_lis_pendens",
