@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2026-06-18T00:53:07.429130+00:00",
+  "lastUpdated": "2026-06-18T01:10:50.025884+00:00",
   "lastScraper": "pipeline1-upload:tax-default",
   "status": "ok",
-  "leadsCount": 0,
-  "leadsAdded": 0,
+  "leadsCount": 4761,
+  "leadsAdded": 4761,
   "leadsUpdated": 0,
   "leadsRejected": 0,
   "errorMessage": null
