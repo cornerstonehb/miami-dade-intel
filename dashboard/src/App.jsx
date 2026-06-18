@@ -4347,7 +4347,7 @@ export default function MiamiDadePropertyIntel() {
       country: "US",
       // ---- Tags GHL should apply ----
       tags: [
-        lead.type,
+        getPrimaryLeadType(lead),
         lead.estateTag,
         lead.absenteeTier ? `Absentee-${lead.absenteeTier.replace(/\s/g, "")}` : null,
         lead.mlsStatus && lead.mlsStatus !== "Off-Market" ? `MLS-${lead.mlsStatus}` : null,
@@ -4358,7 +4358,7 @@ export default function MiamiDadePropertyIntel() {
       customFields: {
         folio: lead.folio,
         motivatedScore: lead.score,
-        leadType: lead.type,
+        leadType: getPrimaryLeadType(lead),
         amountOwed: lead.amount,
         filedDate: lead.filed,
         legalDescription: lead.legalDesc,
@@ -4837,7 +4837,8 @@ export default function MiamiDadePropertyIntel() {
         const listDate = new Date(r.mlsListDate);
         if (!isNaN(listDate) && listDate >= sevenDaysAgo) t.newMlsActive++;
       }
-      if (byType[r.type] !== undefined) byType[r.type]++;
+      const primaryType = getPrimaryLeadType(r);
+      if (primaryType && byType[primaryType] !== undefined) byType[primaryType]++;
       if (Array.isArray(r.listTypes)) {
         r.listTypes.forEach((lt) => {
           if (byListType[lt.name] !== undefined) byListType[lt.name]++;
@@ -4927,8 +4928,7 @@ export default function MiamiDadePropertyIntel() {
       if (auctionOutcomeCounts[outcome] !== undefined) auctionOutcomeCounts[outcome]++;
       // Per-family outcome intersections (e.g. "PFC Auction Sold")
       for (const it of LEAD_TYPE_TAG_INTERSECTIONS) {
-        if (!it.outcome) continue;
-        if (r.type === it.type && outcome === it.outcome) {
+        if (getPrimaryLeadType(r) === it.type && outcome === it.outcome) {
           typeTagIntersectionCounts[it.key]++;
         }
       }
@@ -4979,7 +4979,7 @@ export default function MiamiDadePropertyIntel() {
       "Mailing Address": r.mailingAddress,
       "Mailing City State Zip": r.mailingCity,
       Folio: r.folio,
-      "Lead Type": r.type,
+      "Lead Type": getPrimaryLeadType(r),
       "Motivated Score": r.score,
       "Amount Owed": r.amount,
       "Filed Date": r.filed,
