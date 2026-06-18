@@ -26,6 +26,7 @@ Subsequent sources to be added:
 """
 import csv
 import io
+import re
 import sys
 from pathlib import Path
 
@@ -109,17 +110,15 @@ def upload():
             "detail": "Uploaded file has no filename.",
         }), 400
 
-    # Read the file into memory. For 1-2MB files this is fine.
     try:
         raw_bytes = uploaded_file.read()
-        text = raw_bytes.decode("utf-8-sig")  # handles BOM if present
+        text = raw_bytes.decode("utf-8-sig")
     except UnicodeDecodeError as e:
         return jsonify({
             "error": "decode_failed",
             "detail": f"Could not decode file as UTF-8: {e}",
         }), 400
 
-    # Parse the CSV using the source-specific parser.
     parser = SOURCE_PARSERS[source]
     try:
         leads = list(parser(text))
@@ -131,9 +130,6 @@ def upload():
 
     rows_parsed = len(leads)
 
-    # Write to docs/data.json via the data_writer.
-    # The data_writer applies eligibility filters (jurisdiction + condo)
-    # and the per-field merge strategies.
     try:
         summary = data_writer.write_leads(leads)
     except Exception as e:
@@ -142,7 +138,6 @@ def upload():
             "detail": f"data_writer.write_leads() raised: {e}",
         }), 500
 
-    # Write meta.json so the dashboard knows when this ran.
     try:
         data_writer.write_meta(
             scraper_name=f"pipeline1-upload:{source}",
@@ -150,11 +145,8 @@ def upload():
             summary=summary,
         )
     except Exception as e:
-        # Meta write failure is not fatal - the leads got written.
-        # Log and continue.
         print(f"WARNING: write_meta failed: {e}", file=sys.stderr)
 
-    # Commit and push the updated data.json + meta.json.
     try:
         committed = data_writer.commit_and_push(
             f"pipeline1-upload: {source} - "
@@ -181,11 +173,135 @@ def upload():
 
 
 # ---------------------------------------------------------------------------
+# Estate detection — Python port of dashboard's detectEstateStatus()
+# ---------------------------------------------------------------------------
+# Mirrors dashboard/src/App.jsx lines 935-1024 exactly. Owner-name regexes
+# detect EST OF / DECEASED markers, life estate (LE), and remainderman (REM)
+# patterns. Multi-owner fields ("X & Y", "X AND Y") get split and analyzed
+# per-owner so one deceased owner alongside a living co-owner is correctly
+# tagged as "EST OF 2nd Owner".
+
+ESTATE_REGEX = re.compile(
+    r"\b(?:EST(?:ATE)?\s*OF|EST\.?\s*OF|EST\b|ESTATE\b|"
+    r"DEC(?:EASED|D|'D)|\(DECD\))\b",
+    re.IGNORECASE,
+)
+CO_REGEX = re.compile(
+    r"\bC/O\s+([A-Z][A-Z\s\.\-']+?)(?:$|\s{2,}|,)",
+    re.IGNORECASE,
+)
+LE_REGEX = re.compile(
+    r"\b(?:LE|L/E|\(LE\)|LIFE\s*ESTATE)\b",
+    re.IGNORECASE,
+)
+REM_REGEX = re.compile(
+    r"\b(?:REM(?:AINDERMAN)?|\(REM\))\b",
+    re.IGNORECASE,
+)
+OWNER_SPLIT_REGEX = re.compile(r"\s+(?:&|AND)\s+", re.IGNORECASE)
+
+
+def _split_owners(owner_str: str):
+    """
+    Split a multi-owner field into individual owner names.
+
+    'JOHN SMITH & MARY SMITH' -> ['JOHN SMITH', 'MARY SMITH']
+    'X AND Y AND Z'           -> ['X', 'Y', 'Z']
+    """
+    if not owner_str:
+        return []
+    return [p.strip() for p in OWNER_SPLIT_REGEX.split(owner_str) if p.strip()]
+
+
+def _clean_owner_name(raw: str) -> str:
+    """Strip estate / LE / REM / parenthetical markers from a name."""
+    cleaned = ESTATE_REGEX.sub("", raw)
+    cleaned = LE_REGEX.sub("", cleaned)
+    cleaned = REM_REGEX.sub("", cleaned)
+    cleaned = re.sub(r"\(\s*\)", "", cleaned)
+    return cleaned.strip()
+
+
+def detect_estate_tag(owner_name: str) -> str:
+    """
+    Inspect the owner name and return one of:
+      - "LE / REM"          life estate or remainderman on title
+      - "EST OF 2nd Owner"  multi-owner field, one deceased, one living
+      - "EST OF"            single or all owners marked estate
+      - None                no estate markers
+
+    Note: This is the upload-time variant. It does NOT consider sale date
+    (so it can't produce "Possible EST OF"). The dashboard's full
+    detectEstateStatus also handles long-hold heuristic when sale data is
+    present — Tax Default CSV doesn't include sale date so we skip that
+    branch.
+    """
+    if not owner_name:
+        return None
+
+    owners = _split_owners(owner_name)
+    if not owners:
+        return None
+
+    owner_analysis = [
+        {
+            "raw": o,
+            "is_estate": bool(ESTATE_REGEX.search(o)),
+            "is_le": bool(LE_REGEX.search(o)),
+            "is_rem": bool(REM_REGEX.search(o)),
+        }
+        for o in owners
+    ]
+
+    has_le = any(o["is_le"] for o in owner_analysis)
+    has_rem = any(o["is_rem"] for o in owner_analysis)
+    estate_owners = [o for o in owner_analysis if o["is_estate"]]
+    living_owners = [o for o in owner_analysis if not o["is_estate"] and not o["is_le"]]
+
+    # 1. LE / REM
+    if has_le or has_rem:
+        return "LE / REM"
+
+    # 2. EST OF 2nd Owner
+    if len(owners) >= 2 and len(estate_owners) >= 1 and len(living_owners) >= 1:
+        return "EST OF 2nd Owner"
+
+    # 3. EST OF
+    if len(estate_owners) > 0:
+        return "EST OF"
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Amount parsing
+# ---------------------------------------------------------------------------
+
+def _parse_money(value: str) -> int:
+    """
+    Convert a money string like '$8,058 ' or '$17,189.50' to an integer
+    (rounded). Returns 0 if the input is empty / unparseable.
+
+    Tax Default CSV uses no decimal places (whole dollars), so int rounding
+    is safe. Trailing whitespace and currency symbols are stripped.
+    """
+    if not value:
+        return 0
+    cleaned = value.strip().replace("$", "").replace(",", "").strip()
+    if not cleaned:
+        return 0
+    try:
+        return int(round(float(cleaned)))
+    except (ValueError, TypeError):
+        return 0
+
+
+# ---------------------------------------------------------------------------
 # Per-source CSV parsers
 # ---------------------------------------------------------------------------
 
 def _truthy_yes(value: str) -> bool:
-    """Return True if a CSV cell is the YES sentinel."""
+    """Return True if a CSV cell is the YES sentinel (case-insensitive)."""
     return (value or "").strip().upper() == "YES"
 
 
@@ -206,22 +322,28 @@ def parse_tax_default(text: str):
       Owner Address State, Owner Address ZIP, Folio Prefix, In XLeads,
       XLeads Status, XLeads Contact Id, XLeads Name, Match Method
 
-    Yields lead dicts with listTypes = [{"name": "Tax Default", ...}] and
-    flags initialized as ["vacant"] and/or ["in_ghl"] when the respective
-    columns are YES. Skipped columns: SMS Address (GHL-only), Property
-    county (always Miami-Dade), Use Code / Use Code Category, Folio Prefix
-    (derivable from folio).
+    Yields lead dicts matching the field names the dashboard reads:
+      - owner            (string)  — full owner-name string
+      - amount           (number)  — Tax Default Owed parsed to int dollars
+      - inCrm            (boolean) — True if "In XLeads" column was YES
+      - estateTag        (string)  — "EST OF" | "EST OF 2nd Owner" |
+                                     "LE / REM" | absent
+      - flags            (array)   — ["vacant"] if Vacant=YES; otherwise []
+      - listTypes        (array)   — [{ name: "Tax Default", source: ... }]
+      - plus enriched per-property and per-owner fields.
+
+    Skipped CSV columns: SMS Address (GHL-only), Property county
+    (always Miami-Dade), Use Code / Use Code Category, Folio Prefix.
     """
     reader = csv.DictReader(io.StringIO(text))
     for row in reader:
         folio = (row.get("APN - Folio") or "").strip()
         if not folio:
-            # Minimum validation: folio must be present.
-            # The data_writer's eligibility filter will catch invalid prefixes.
             continue
 
-        # Concatenate owner address into a single mailingAddress string,
-        # skipping blank lines.
+        owner_str = (row.get("Owner Name or Business Name") or "").strip()
+
+        # Mailing address — concatenated, skipping blanks.
         mailing_parts = [
             (row.get("Owner Address Line 1") or "").strip(),
             (row.get("Owner Address Line 2") or "").strip(),
@@ -231,17 +353,18 @@ def parse_tax_default(text: str):
         ]
         mailing_parts = [p for p in mailing_parts if p]
 
-        # Build the initial flags array from YES/NO indicators.
+        # Flags array — currently just vacancy (in_ghl moved to inCrm field)
         flags = []
         if _truthy_yes(row.get("Vacant", "")):
             flags.append("vacant")
-        if _truthy_yes(row.get("In XLeads", "")):
-            flags.append("in_ghl")
 
         lead = {
             "folio": folio,
-            # Owner identity
-            "ownerName": (row.get("Owner Name or Business Name") or "").strip(),
+            # Dashboard-canonical owner/amount/CRM fields (line 760, 5795, 3516)
+            "owner": owner_str,
+            "amount": _parse_money(row.get("Tax Default Owed", "")),
+            "inCrm": _truthy_yes(row.get("In XLeads", "")),
+            # Owner-name parsed parts (no conflict with dashboard fields)
             "ownerFirstName": (row.get("First Name") or "").strip(),
             "ownerLastName": (row.get("Last Name") or "").strip(),
             # Property location
@@ -254,11 +377,10 @@ def parse_tax_default(text: str):
             # Tax & financial
             "taxYearsOwed": (row.get("Tax Yrs Owed") or "").strip(),
             "totalTax": (row.get("Total Tax") or "").strip(),
-            "taxDefaultOwed": (row.get("Tax Default Owed") or "").strip(),
             "accountStatus": (row.get("Account Status") or "").strip(),
             "certStatus": (row.get("Cert Status") or "").strip(),
             "deedStatus": (row.get("Deed Status") or "").strip(),
-            # GHL / XLeads enrichment
+            # GHL / XLeads enrichment (also reachable via inCrm boolean)
             "ghlStatus": (row.get("XLeads Status") or "").strip(),
             "ghlContactId": (row.get("XLeads Contact Id") or "").strip(),
             "ghlName": (row.get("XLeads Name") or "").strip(),
@@ -272,11 +394,17 @@ def parse_tax_default(text: str):
             ],
             "flags": flags,
         }
+
+        # Estate detection: set estateTag if owner name shows estate markers.
+        # Only set the field if a tag is detected — absent field is fine.
+        estate_tag = detect_estate_tag(owner_str)
+        if estate_tag:
+            lead["estateTag"] = estate_tag
+
         yield lead
 
 
 # Dispatcher: source-id -> parser function.
-# Add new sources here as their parsers are implemented.
 SOURCE_PARSERS = {
     "tax-default": parse_tax_default,
 }
