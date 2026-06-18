@@ -150,7 +150,7 @@ def upload():
             summary=summary,
         )
     except Exception as e:
-        # Meta write failure is not fatal — the leads got written.
+        # Meta write failure is not fatal - the leads got written.
         # Log and continue.
         print(f"WARNING: write_meta failed: {e}", file=sys.stderr)
 
@@ -184,24 +184,37 @@ def upload():
 # Per-source CSV parsers
 # ---------------------------------------------------------------------------
 
+def _truthy_yes(value: str) -> bool:
+    """Return True if a CSV cell is the YES sentinel."""
+    return (value or "").strip().upper() == "YES"
+
+
 def parse_tax_default(text: str):
     """
-    Parse the Miami-Dade Tax Collector's Tax Default CSV.
+    Parse the Miami-Dade Tax Collector's Tax Default CSV (cleaned variant).
 
-    Expected columns (16 total):
-      Folio Number, Roll Yr, Tax Yr, Property Address, Use Code,
-      Total Tax, Account Status, Cert Status, Deed Status, Balance Amount,
-      Owner Name, Owner Address Line 1, Owner Address Line 2,
-      Owner Address City, Owner Address State, Owner Address ZIP
+    The cleaned variant differs from the raw Tax Collector export:
+    extra columns from Ellie's pre-upload cleaning pipeline (split first/last
+    name, USPS vacancy flag, GHL/XLeads enrichment status).
 
-    Yields lead dicts. Each lead enters with listTypes = ["Tax Default"]
-    and flags = []. Mapping is minimum-viable for v1 - folio is required;
-    other fields are populated as-is. The dashboard's tagging functions
-    (applyEstateTags, etc.) will operate on these fields downstream.
+    Expected columns (30 total):
+      APN - Folio, Owner Name or Business Name, First Name, Last Name,
+      Street Address, SMS Address, City, State, Postal Code,
+      Property county, Tax Yrs Owed, Vacant, Use Code, Use Code Category,
+      Total Tax, Account Status, Cert Status, Deed Status, Tax Default Owed,
+      Owner Address Line 1, Owner Address Line 2, Owner Address City,
+      Owner Address State, Owner Address ZIP, Folio Prefix, In XLeads,
+      XLeads Status, XLeads Contact Id, XLeads Name, Match Method
+
+    Yields lead dicts with listTypes = [{"name": "Tax Default", ...}] and
+    flags initialized as ["vacant"] and/or ["in_ghl"] when the respective
+    columns are YES. Skipped columns: SMS Address (GHL-only), Property
+    county (always Miami-Dade), Use Code / Use Code Category, Folio Prefix
+    (derivable from folio).
     """
     reader = csv.DictReader(io.StringIO(text))
     for row in reader:
-        folio = (row.get("Folio Number") or "").strip()
+        folio = (row.get("APN - Folio") or "").strip()
         if not folio:
             # Minimum validation: folio must be present.
             # The data_writer's eligibility filter will catch invalid prefixes.
@@ -218,26 +231,46 @@ def parse_tax_default(text: str):
         ]
         mailing_parts = [p for p in mailing_parts if p]
 
+        # Build the initial flags array from YES/NO indicators.
+        flags = []
+        if _truthy_yes(row.get("Vacant", "")):
+            flags.append("vacant")
+        if _truthy_yes(row.get("In XLeads", "")):
+            flags.append("in_ghl")
+
         lead = {
             "folio": folio,
-            "propertyAddress": (row.get("Property Address") or "").strip(),
-            "ownerName": (row.get("Owner Name") or "").strip(),
+            # Owner identity
+            "ownerName": (row.get("Owner Name or Business Name") or "").strip(),
+            "ownerFirstName": (row.get("First Name") or "").strip(),
+            "ownerLastName": (row.get("Last Name") or "").strip(),
+            # Property location
+            "propertyAddress": (row.get("Street Address") or "").strip(),
+            "propertyCity": (row.get("City") or "").strip(),
+            "propertyState": (row.get("State") or "").strip(),
+            "propertyZip": (row.get("Postal Code") or "").strip(),
+            # Mailing address
             "mailingAddress": ", ".join(mailing_parts),
-            "useCode": (row.get("Use Code") or "").strip(),
+            # Tax & financial
+            "taxYearsOwed": (row.get("Tax Yrs Owed") or "").strip(),
             "totalTax": (row.get("Total Tax") or "").strip(),
-            "balanceAmount": (row.get("Balance Amount") or "").strip(),
+            "taxDefaultOwed": (row.get("Tax Default Owed") or "").strip(),
             "accountStatus": (row.get("Account Status") or "").strip(),
             "certStatus": (row.get("Cert Status") or "").strip(),
             "deedStatus": (row.get("Deed Status") or "").strip(),
-            "rollYear": (row.get("Roll Yr") or "").strip(),
-            "taxYear": (row.get("Tax Yr") or "").strip(),
+            # GHL / XLeads enrichment
+            "ghlStatus": (row.get("XLeads Status") or "").strip(),
+            "ghlContactId": (row.get("XLeads Contact Id") or "").strip(),
+            "ghlName": (row.get("XLeads Name") or "").strip(),
+            "ghlMatchMethod": (row.get("Match Method") or "").strip(),
+            # Provenance
             "listTypes": [
                 {
                     "name": "Tax Default",
-                    "source": "tax-collector-csv",
+                    "source": "tax-collector-csv-cleaned",
                 }
             ],
-            "flags": [],
+            "flags": flags,
         }
         yield lead
 
