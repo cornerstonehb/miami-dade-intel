@@ -2927,26 +2927,42 @@ const LEAD_TYPES = [
 // type. That logic lives at the scraper boundary, not here.
 function classifyPropertyLien(amount) {
   const a = Number(amount) || 0;
-  if (a < 50000) return "Prop Liens <$50K";
-  if (a < 100000) return "Prop Liens $50-100K";
-  return "Prop Liens $100K+";
+  if (a < 50000) return "<$50K";
+  if (a < 100000) return "$50-100K";
+  return "$100K+";
 }
-
-const PROPERTY_LIEN_TIERS = new Set([
-  "Prop Liens <$50K",
-  "Prop Liens $50-100K",
-  "Prop Liens $100K+",
+// Set of lienType values that belong to the Property Liens family (government-
+// issued, per decisions archive Section 2.20). Tiering applies only to these
+// sub-types - Other Liens (private creditor), Federal Tax Liens, and Judgments
+// are not tiered.
+const PROPERTY_LIEN_TYPES = new Set([
+  "code-violations-lien",
+  "building-violation-lien",
+  "demolition-lien",
+  "lot-clearance-lien",
+  "water-lien",
+  "unsafe-structure-lien",
 ]);
-
-// Re-classify an existing Property Lien lead when its amount changes. Returns
-// a new lead object with `type` and `amount` updated if the tier changed;
-// returns the original lead unchanged if the tier is the same (so React
-// doesn't re-render unnecessarily). No-op for non-Property-Liens leads.
-function reclassifyPropertyLien(lead, newAmount) {
-  if (!lead || !PROPERTY_LIEN_TIERS.has(lead.type)) return lead;
+// Re-classify a specific Property Lien within a lead when its amount changes.
+// Locates the lien by lienId, verifies it's a governmental (Property Liens
+// family) lien, then updates that lien's amount and tier. Returns a new lead
+// object with the lien array updated, OR returns the original lead unchanged
+// if the lien isn't found, isn't a Property Liens family lien, or the new
+// amount produces the same tier value (so React doesn't re-render unnecessarily).
+// Other liens in the array are unchanged. See decisions archive Section 2.20
+// for the full lien model (Property Liens = government-issued; tiering is
+// per-lien not per-lead; lead.liens[] is the canonical multi-lien array).
+function reclassifyPropertyLien(lead, lienId, newAmount) {
+  if (!lead || !Array.isArray(lead.liens)) return lead;
+  const targetIdx = lead.liens.findIndex((l) => l.lienId === lienId);
+  if (targetIdx === -1) return lead;
+  const existingLien = lead.liens[targetIdx];
+  if (!PROPERTY_LIEN_TYPES.has(existingLien.lienType)) return lead;
   const newTier = classifyPropertyLien(newAmount);
-  if (newTier === lead.type && newAmount === lead.amount) return lead;
-  return { ...lead, type: newTier, amount: newAmount };
+  if (newTier === existingLien.tier && newAmount === existingLien.amount) return lead;
+  const newLiens = lead.liens.slice();
+  newLiens[targetIdx] = { ...existingLien, amount: newAmount, tier: newTier };
+  return { ...lead, liens: newLiens };
 }
 
 // ----------------------------------------------------------------------------
