@@ -1243,9 +1243,13 @@ function applyPaTags(leads) {
     }
     if (!newFlags.includes("STACKED") && newFlags.length >= 3) newFlags.push("STACKED");
 
+    const newListTypes = reclassifyToAdversePossession && !hasListType(lead, "Adverse Possession")
+      ? [...(lead.listTypes || []), { name: "Adverse Possession", source: "pa-roll-95.18-regex", verifiedAt: new Date().toISOString() }]
+      : lead.listTypes;
     return {
       ...lead,
       type: reclassifyToAdversePossession ? "Adverse Possession" : lead.type,
+      listTypes: newListTypes,
       legalDesc: legal1Override || lead.legalDesc,
       paExemptions: exemptions,
       paTags: detected.map((t) => t.key),
