@@ -2885,12 +2885,12 @@ const LEAD_TYPES = [
   { key: "Tax Deed Auction", family: "Tax Deed Auction", icon: Gavel, color: "#dc2626" },
   // Tax Deed family — case filed, no auction date yet (mid-stage)
   { key: "Tax Deed", family: "Tax Deed", icon: Gavel, color: "#b91c1c" },
+  // Tax Default family — delinquent taxes, certificate stage
+  { key: "Tax Default", family: "Tax Default", icon: Receipt, color: "#eab308" },
   // Pre-Foreclosure Auction family — auction imminent
   { key: "PFC Auction", family: "Pre-Foreclosure Auction", icon: Gavel, color: "#ea580c" },
   // Pre-Foreclosure family — Lis Pendens filed, not yet at auction
   { key: "Pre-Foreclosure", family: "Pre-Foreclosure", icon: Scale, color: "#f97316" },
-  // Tax Default family — delinquent taxes, certificate stage
-  { key: "Tax Default", family: "Tax Default", icon: Receipt, color: "#eab308" },
   // Inherited family — two distinct deed-type signals
   { key: "Inherited Probate", family: "Inherited", icon: Home, color: "#0891b2" },
   { key: "Inherited QCD", family: "Inherited", icon: Home, color: "#0e7490" },
