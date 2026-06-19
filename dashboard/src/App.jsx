@@ -1525,10 +1525,25 @@ function applyAuctionData(leads) {
     }
 
     const verdict = computeEquityVerdict({ arvEstimate, repairsEstimate, finalJudgment, paTotalValue });
+    // Lifecycle replace: Tax Default -> Tax Deed Auction when auction data attaches.
+    // The PFC Auction path keeps its existing listTypes unchanged (no transition).
+    const isLifecycleReplace = reclassifiedType === "Tax Deed Auction";
+    const nowIso = new Date().toISOString();
+    const newListTypes = isLifecycleReplace
+      ? [...(lead.listTypes || []).filter((lt) => lt.name !== "Tax Default"), { name: "Tax Deed Auction", source: "auction-data-attach", verifiedAt: nowIso }]
+      : lead.listTypes;
+    const oldTaxDefaultEntry = isLifecycleReplace
+      ? (lead.listTypes || []).find((lt) => lt.name === "Tax Default")
+      : null;
+    const newPreviousListTypes = oldTaxDefaultEntry
+      ? [...(lead.previousListTypes || []), { ...oldTaxDefaultEntry, deactivatedAt: nowIso, deactivationReason: "tax-deed-case-filed" }]
+      : lead.previousListTypes;
 
     return {
       ...lead,
       type: reclassifiedType,
+      listTypes: newListTypes,
+      previousListTypes: newPreviousListTypes,
       soldAt,
       soldDeedType,
       auctionData: {
