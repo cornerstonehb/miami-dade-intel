@@ -1248,7 +1248,6 @@ function applyPaTags(leads) {
       : lead.listTypes;
     return {
       ...lead,
-      type: reclassifyToAdversePossession ? "Adverse Possession" : lead.type,
       listTypes: newListTypes,
       legalDesc: legal1Override || lead.legalDesc,
       paExemptions: exemptions,
@@ -1475,7 +1474,7 @@ function applyAuctionData(leads) {
     const paTotalValue = Math.round((arvEstimate * paRatio) / 1000) * 1000;
 
     let finalJudgment, certificateAmount, plaintiff, caseNumber;
-    let reclassifiedType = lead.type;
+    let isLifecycleReplace = false;
     if (hasListType(lead, "PFC Auction")) {
       const verdictRoll = rand();
       const fjVsPaRatio = verdictRoll < 0.55 ? 0.40 + rand() * 0.55  // PURSUE: 40-95%
@@ -1490,7 +1489,7 @@ function applyAuctionData(leads) {
       finalJudgment = certificateAmount; // for tax deeds, FJ = cert + interest + fees, simplified
       plaintiff = "MIAMI-DADE TAX COLLECTOR";
       caseNumber = `TD-2026-${String(1000 + Math.floor(rand() * 9000)).padStart(4, "0")}`;
-      reclassifiedType = "Tax Deed Auction";
+      isLifecycleReplace = true;
     }
 
     // Auction date and outcome assignment.
@@ -1527,7 +1526,6 @@ function applyAuctionData(leads) {
     const verdict = computeEquityVerdict({ arvEstimate, repairsEstimate, finalJudgment, paTotalValue });
     // Lifecycle replace: Tax Default -> Tax Deed Auction when auction data attaches.
     // The PFC Auction path keeps its existing listTypes unchanged (no transition).
-    const isLifecycleReplace = reclassifiedType === "Tax Deed Auction";
     const nowIso = new Date().toISOString();
     const newListTypes = isLifecycleReplace
       ? [...(lead.listTypes || []).filter((lt) => lt.name !== "Tax Default"), { name: "Tax Deed Auction", source: "auction-data-attach", verifiedAt: nowIso }]
@@ -1541,7 +1539,6 @@ function applyAuctionData(leads) {
 
     return {
       ...lead,
-      type: reclassifiedType,
       listTypes: newListTypes,
       previousListTypes: newPreviousListTypes,
       soldAt,
