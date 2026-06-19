@@ -3181,6 +3181,7 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "Tax Deed Auction EST OF", shortLabel: "Deceased", type: "Tax Deed Auction", tag: "EST OF", family: "Tax Deed Auction" },
   { key: "Tax Deed Auction EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Tax Deed Auction", tag: "EST OF 2nd Owner", family: "Tax Deed Auction" },
   { key: "Tax Deed Auction Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Deed Auction", tag: "Possible EST OF", family: "Tax Deed Auction" },
+  { key: "Tax Deed Auction LE REM", shortLabel: "LE / REM", type: "Tax Deed Auction", tag: "LE / REM", family: "Tax Deed Auction" },
   { key: "Tax Deed Auction Other", shortLabel: "Other", type: "Tax Deed Auction", tag: "__OTHER__", family: "Tax Deed Auction" },
   // Tax Deed Auction outcomes
   { key: "Tax Deed Auction Cancelled BK", shortLabel: "Cancelled — BK", type: "Tax Deed Auction", outcome: "cancelled_bk", family: "Tax Deed Auction" },
@@ -3192,11 +3193,13 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "Tax Deed EST OF", shortLabel: "Deceased", type: "Tax Deed", tag: "EST OF", family: "Tax Deed" },
   { key: "Tax Deed EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Tax Deed", tag: "EST OF 2nd Owner", family: "Tax Deed" },
   { key: "Tax Deed Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Deed", tag: "Possible EST OF", family: "Tax Deed" },
+  { key: "Tax Deed LE REM", shortLabel: "LE / REM", type: "Tax Deed", tag: "LE / REM", family: "Tax Deed" },
   { key: "Tax Deed Other", shortLabel: "Other", type: "Tax Deed", tag: "__OTHER__", family: "Tax Deed" },
   // PFC Auction family
   { key: "PFC Auction EST OF", shortLabel: "Deceased", type: "PFC Auction", tag: "EST OF", family: "Pre-Foreclosure Auction" },
   { key: "PFC Auction EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "PFC Auction", tag: "EST OF 2nd Owner", family: "Pre-Foreclosure Auction" },
   { key: "PFC Auction Possible EST OF", shortLabel: "Possible Deceased", type: "PFC Auction", tag: "Possible EST OF", family: "Pre-Foreclosure Auction" },
+  { key: "PFC Auction LE REM", shortLabel: "LE / REM", type: "PFC Auction", tag: "LE / REM", family: "Pre-Foreclosure Auction" },
   { key: "PFC Auction Other", shortLabel: "Other", type: "PFC Auction", tag: "__OTHER__", family: "Pre-Foreclosure Auction" },
   // PFC Auction outcomes
   { key: "PFC Auction Cancelled BK", shortLabel: "Cancelled — BK", type: "PFC Auction", outcome: "cancelled_bk", family: "Pre-Foreclosure Auction" },
@@ -3208,11 +3211,13 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "PFC EST OF", shortLabel: "Deceased", type: "Pre-Foreclosure", tag: "EST OF", family: "Pre-Foreclosure" },
   { key: "PFC EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Pre-Foreclosure", tag: "EST OF 2nd Owner", family: "Pre-Foreclosure" },
   { key: "PFC Possible EST OF", shortLabel: "Possible Deceased", type: "Pre-Foreclosure", tag: "Possible EST OF", family: "Pre-Foreclosure" },
+  { key: "PFC LE REM", shortLabel: "LE / REM", type: "Pre-Foreclosure", tag: "LE / REM", family: "Pre-Foreclosure" },
   { key: "PFC Other", shortLabel: "Other", type: "Pre-Foreclosure", tag: "__OTHER__", family: "Pre-Foreclosure" },
   // Tax Default family
   { key: "Tax Default EST OF", shortLabel: "Deceased", type: "Tax Default", tag: "EST OF", family: "Tax Default" },
   { key: "Tax Default EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Tax Default", tag: "EST OF 2nd Owner", family: "Tax Default" },
   { key: "Tax Default Possible EST OF", shortLabel: "Possible Deceased", type: "Tax Default", tag: "Possible EST OF", family: "Tax Default" },
+  { key: "Tax Default LE REM", shortLabel: "LE / REM", type: "Tax Default", tag: "LE / REM", family: "Tax Default" },
   { key: "Tax Default Other", shortLabel: "Other", type: "Tax Default", tag: "__OTHER__", family: "Tax Default" },
   // Probate family — status-based intersections via lead.probateStatus.
   // No EST OF / Possible EST OF intersections here because a probate
@@ -3226,29 +3231,43 @@ const LEAD_TYPE_TAG_INTERSECTIONS = [
   { key: "Adverse Possession EST OF", shortLabel: "Deceased", type: "Adverse Possession", tag: "EST OF", family: "Adverse Possession" },
   { key: "Adverse Possession EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Adverse Possession", tag: "EST OF 2nd Owner", family: "Adverse Possession" },
   { key: "Adverse Possession Possible EST OF", shortLabel: "Possible Deceased", type: "Adverse Possession", tag: "Possible EST OF", family: "Adverse Possession" },
+  { key: "Adverse Possession LE REM", shortLabel: "LE / REM", type: "Adverse Possession", tag: "LE / REM", family: "Adverse Possession" },
+  { key: "Adverse Possession Other", shortLabel: "Other", type: "Adverse Possession", tag: "__OTHER__", family: "Adverse Possession" },
   // Property Liens × estate-tag intersections — lien-burdened estate property
   // where heirs need to clean up title before sale.
   { key: "Prop Liens <$50K EST OF", shortLabel: "Deceased", type: "Property Liens", tag: "EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
   { key: "Prop Liens <$50K EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Property Liens", tag: "EST OF 2nd Owner", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
   { key: "Prop Liens <$50K Possible EST OF", shortLabel: "Possible Deceased", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
+  { key: "Prop Liens <$50K LE REM", shortLabel: "LE / REM", type: "Property Liens", tag: "LE / REM", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
+  { key: "Prop Liens <$50K Other", shortLabel: "Other", type: "Property Liens", tag: "__OTHER__", family: "Prop Liens <$50K", parentFamily: "Property Liens", tier: "<$50K" },
   { key: "Prop Liens $50-100K EST OF", shortLabel: "Deceased", type: "Property Liens", tag: "EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
   { key: "Prop Liens $50-100K EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Property Liens", tag: "EST OF 2nd Owner", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
   { key: "Prop Liens $50-100K Possible EST OF", shortLabel: "Possible Deceased", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
+  { key: "Prop Liens $50-100K LE REM", shortLabel: "LE / REM", type: "Property Liens", tag: "LE / REM", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
+  { key: "Prop Liens $50-100K Other", shortLabel: "Other", type: "Property Liens", tag: "__OTHER__", family: "Prop Liens $50-100K", parentFamily: "Property Liens", tier: "$50-100K" },
   { key: "Prop Liens $100K+ EST OF", shortLabel: "Deceased", type: "Property Liens", tag: "EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
   { key: "Prop Liens $100K+ EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Property Liens", tag: "EST OF 2nd Owner", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
   { key: "Prop Liens $100K+ Possible EST OF", shortLabel: "Possible Deceased", type: "Property Liens", tag: "Possible EST OF", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
+  { key: "Prop Liens $100K+ LE REM", shortLabel: "LE / REM", type: "Property Liens", tag: "LE / REM", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
+  { key: "Prop Liens $100K+ Other", shortLabel: "Other", type: "Property Liens", tag: "__OTHER__", family: "Prop Liens $100K+", parentFamily: "Property Liens", tier: "$100K+" },
   // Federal Tax Liens × estate-tag intersections.
   { key: "Federal Tax Liens EST OF", shortLabel: "Deceased", type: "Federal Tax Liens", tag: "EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
   { key: "Federal Tax Liens EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Federal Tax Liens", tag: "EST OF 2nd Owner", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
   { key: "Federal Tax Liens Possible EST OF", shortLabel: "Possible Deceased", type: "Federal Tax Liens", tag: "Possible EST OF", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
+  { key: "Federal Tax Liens LE REM", shortLabel: "LE / REM", type: "Federal Tax Liens", tag: "LE / REM", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
+  { key: "Federal Tax Liens Other", shortLabel: "Other", type: "Federal Tax Liens", tag: "__OTHER__", family: "Federal Tax Liens", parentFamily: "Federal Tax Liens" },
   // Other Liens × estate-tag intersections.
   { key: "Other Liens EST OF", shortLabel: "Deceased", type: "Other Liens", tag: "EST OF", family: "Other Liens", parentFamily: "Other Liens" },
   { key: "Other Liens EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Other Liens", tag: "EST OF 2nd Owner", family: "Other Liens", parentFamily: "Other Liens" },
   { key: "Other Liens Possible EST OF", shortLabel: "Possible Deceased", type: "Other Liens", tag: "Possible EST OF", family: "Other Liens", parentFamily: "Other Liens" },
+  { key: "Other Liens LE REM", shortLabel: "LE / REM", type: "Other Liens", tag: "LE / REM", family: "Other Liens", parentFamily: "Other Liens" },
+  { key: "Other Liens Other", shortLabel: "Other", type: "Other Liens", tag: "__OTHER__", family: "Other Liens", parentFamily: "Other Liens" },
   // Judgments × estate-tag intersections.
   { key: "Judgments EST OF", shortLabel: "Deceased", type: "Judgments", tag: "EST OF", family: "Judgments", parentFamily: "Judgments" },
   { key: "Judgments EST OF 2nd Owner", shortLabel: "Deceased/2nd Owner", type: "Judgments", tag: "EST OF 2nd Owner", family: "Judgments", parentFamily: "Judgments" },
   { key: "Judgments Possible EST OF", shortLabel: "Possible Deceased", type: "Judgments", tag: "Possible EST OF", family: "Judgments", parentFamily: "Judgments" },
+  { key: "Judgments LE REM", shortLabel: "LE / REM", type: "Judgments", tag: "LE / REM", family: "Judgments", parentFamily: "Judgments" },
+  { key: "Judgments Other", shortLabel: "Other", type: "Judgments", tag: "__OTHER__", family: "Judgments", parentFamily: "Judgments" },
 ];
 
 const TYPE_COLOR = Object.fromEntries(LEAD_TYPES.map((t) => [t.key, t.color]));
