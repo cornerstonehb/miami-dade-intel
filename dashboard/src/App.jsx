@@ -5463,17 +5463,45 @@ export default function MiamiDadePropertyIntel() {
                   const familyIntersections = LEAD_TYPE_TAG_INTERSECTIONS.filter((it) => it.family === family);
                   return (
                     <React.Fragment key={family}>
-                      {familyTypes.map((t) => (
-                        <SidebarItem
-                          key={t.key}
-                          icon={t.icon}
-                          label={t.label || t.key}
-                          count={totals.byType[t.key] || 0}
-                          active={activeType.includes(t.key) && !typeTagIntersection}
-                          onClick={() => { setActiveType([t.key]); setTypeTagIntersection(null); }}
-                          iconColor={t.color}
-                        />
-                      ))}
+                      {familyTypes.map((t) => {
+                        const Icon = t.icon;
+                        const isExpanded = expandedFamilies.has(t.family);
+                        const isActive = activeType.includes(t.key) && !typeTagIntersection;
+                        const Chevron = isExpanded ? ChevronDown : ChevronRight;
+                        // Parent row: chevron + filter toggle. Click does both:
+                        // toggle family expand state AND apply/clear the filter (symmetric undo).
+                        return (
+                          <button
+                            key={t.key}
+                            onClick={() => {
+                              const willBeActive = !isActive;
+                              setExpandedFamilies((prev) => {
+                                const next = new Set(prev);
+                                if (willBeActive) next.add(t.family);
+                                else next.delete(t.family);
+                                return next;
+                              });
+                              if (willBeActive) {
+                                setActiveType([t.key]);
+                                setTypeTagIntersection(null);
+                              } else {
+                                setActiveType([]);
+                                setTypeTagIntersection(null);
+                              }
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition"
+                            style={{
+                              background: isActive ? "#2563eb" : "transparent",
+                              color: isActive ? "white" : "#334155",
+                            }}
+                          >
+                            <Chevron className="w-3.5 h-3.5" style={{ color: isActive ? "white" : "#94a3b8" }} />
+                            <Icon className="w-4 h-4" style={{ color: isActive ? "white" : (t.color || "#64748b") }} />
+                            <span className="flex-1 text-left">{t.label || t.key}</span>
+                            <span className="text-xs font-bold opacity-80">{fmtCount(totals.byType[t.key] || 0)}</span>
+                          </button>
+                        );
+                      })}
                       {/* Intersection sub-rows — indented, smaller text, marked with ◦ */}
                       {familyIntersections.map((it) => {
                         const isActive = typeTagIntersection?.type === it.type && (
