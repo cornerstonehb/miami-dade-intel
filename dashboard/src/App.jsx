@@ -4271,7 +4271,8 @@ export default function MiamiDadePropertyIntel() {
   const [activeType, setActiveType] = useState([]);  // array of lead-type keys
   const [typeTagIntersection, setTypeTagIntersection] = useState(null); // { type, tag } | null — single-value drill-down
   const [expandedFamilies, setExpandedFamilies] = useState(new Set()); // Set of family names currently expanded in sidebar (collapse/expand UX)
-  const [collapsedSections, setCollapsedSections] = useState(new Set(["JURISDICTION","CODE VIOLATIONS","PROPERTY CONDITION","OWNER STATUS","PA TAGS","ABSENTEE OWNER","DEED & FINANCIAL EVENTS","RECENTLY IMPORTED","MLS STATUS"])); // Set of section names currently collapsed in sidebar (default: all 9 collapsible sections start collapsed)
+  const [collapsedSections, setCollapsedSections] = useState(new Set(["CODE VIOLATIONS","PROPERTY CONDITION","OWNER STATUS","PA TAGS","ABSENTEE OWNER","DEED & FINANCIAL EVENTS","RECENTLY IMPORTED","MLS STATUS"])); // Set of section names currently collapsed in sidebar (default: all 9 collapsible sections start collapsed)
+  const [citiesExpanded, setCitiesExpanded] = useState(false); // Cities dropdown under "All Miami-Dade" — collapsed by default, expands on click
   const [conditionTagFilter, setConditionTagFilter] = useState(null);
   const [scoreFilter, setScoreFilter] = useState([]);
   const [mlsFilter, setMlsFilter] = useState([]);
@@ -5281,14 +5282,24 @@ export default function MiamiDadePropertyIntel() {
           <div className="col-span-12 lg:col-span-2">
             <div className="text-[11px] font-bold tracking-wider mb-3" style={{ color: "#64748b" }}>JURISDICTION</div>
             <div className="space-y-1 mb-2">
-              <SidebarItem
-                icon={Landmark}
-                label="All Miami-Dade"
-                count={recognizedLeads.length}
-                active={jurisdictionFilter === "All"}
-                onClick={() => setJurisdictionFilter("All")}
-                iconColor="#0891b2"
-              />
+              {/* "All Miami-Dade" with chevron toggle. Click sets filter to All AND toggles cities dropdown. */}
+              <button
+                onClick={() => {
+                  setJurisdictionFilter("All");
+                  setCitiesExpanded((prev) => !prev);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition"
+                style={{
+                  background: jurisdictionFilter === "All" ? "#2563eb" : "transparent",
+                  color: jurisdictionFilter === "All" ? "white" : "#334155",
+                }}
+              >
+                {citiesExpanded ? <ChevronDown className="w-3.5 h-3.5" style={{ color: jurisdictionFilter === "All" ? "white" : "#94a3b8" }} /> : <ChevronRight className="w-3.5 h-3.5" style={{ color: jurisdictionFilter === "All" ? "white" : "#94a3b8" }} />}
+                <Landmark className="w-4 h-4" style={{ color: jurisdictionFilter === "All" ? "white" : "#0891b2" }} />
+                <span className="flex-1 text-left">All Miami-Dade</span>
+                <span className="text-xs font-bold opacity-80">{fmtCount(recognizedLeads.length)}</span>
+              </button>
+              {citiesExpanded && (<>
               {/* Pinned: always-visible jurisdictions, in PINNED_PREFIXES order */}
               {PINNED_PREFIXES.map((prefix) => {
                 const muni = FOLIO_PREFIX_TO_MUNICIPALITY[prefix];
@@ -5329,6 +5340,7 @@ export default function MiamiDadePropertyIntel() {
                   </div>
                 );
               })()}
+              </>)}
             </div>
             <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>SCORE FILTERS</div>
             <div className="space-y-1">
@@ -5678,7 +5690,21 @@ export default function MiamiDadePropertyIntel() {
             </div>
 
             {/* CODE VIOLATIONS — live ArcGIS REST API integration (sidebar filters) */}
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>CODE VIOLATIONS ★ <span className="font-normal" style={{ color: "#94a3b8" }}>(live API)</span></div>
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("CODE VIOLATIONS")) next.delete("CODE VIOLATIONS");
+                else next.add("CODE VIOLATIONS");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("CODE VIOLATIONS") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>CODE VIOLATIONS ★ {' '}<span className="font-normal" style={{ color: "#94a3b8" }}>(live API)</span></span>
+            </button>
+            {!collapsedSections.has("CODE VIOLATIONS") && (<>
             <div className="space-y-1">
               <SidebarItem icon={AlertTriangle} label="Any Code Violations" count={totals.codeViolationsCount} active={codeViolationsFilter && !violationCategoryFilter} onClick={() => { setCodeViolationsFilter(!codeViolationsFilter); setViolationCategoryFilter(null); }} iconColor="#dc2626" />
               {VIOLATION_CATEGORIES.map((cat, idx) => (
@@ -5701,9 +5727,24 @@ export default function MiamiDadePropertyIntel() {
                 </React.Fragment>
               ))}
             </div>
+            </>)}
 
             {/* PROPERTY CONDITION — Bad Condition Score signals */}
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>PROPERTY CONDITION</div>
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("PROPERTY CONDITION")) next.delete("PROPERTY CONDITION");
+                else next.add("PROPERTY CONDITION");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("PROPERTY CONDITION") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>PROPERTY CONDITION</span>
+            </button>
+            {!collapsedSections.has("PROPERTY CONDITION") && (<>
             <div className="space-y-1">
               <SidebarItem
                 icon={Layers}
@@ -5725,7 +5766,22 @@ export default function MiamiDadePropertyIntel() {
                 />
               ))}
             </div>
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>OWNER STATUS</div>
+            </>)}
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("OWNER STATUS")) next.delete("OWNER STATUS");
+                else next.add("OWNER STATUS");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("OWNER STATUS") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>OWNER STATUS</span>
+            </button>
+            {!collapsedSections.has("OWNER STATUS") && (<>
             <div className="space-y-1">
               <SidebarItem icon={Layers} label="All" count={totals.total} active={ownerStatusFilter.length === 0} onClick={() => setOwnerStatusFilter([])} iconColor="#64748b" />
               <SidebarItem icon={UserCircle} label="Deceased" count={totals.byOwnerStatus["Deceased"]} active={ownerStatusFilter.includes("Deceased")} onClick={() => setOwnerStatusFilter(["Deceased"])} iconColor="#16a34a" />
@@ -5733,14 +5789,44 @@ export default function MiamiDadePropertyIntel() {
               <SidebarItem icon={UserCircle} label="Possible Deceased" count={totals.byOwnerStatus["Possible Deceased"]} active={ownerStatusFilter.includes("Possible Deceased")} onClick={() => setOwnerStatusFilter(["Possible Deceased"])} iconColor="#0891b2" />
               <SidebarItem icon={UserCircle} label="LE / REM" count={totals.byOwnerStatus["LE / REM"]} active={ownerStatusFilter.includes("LE / REM")} onClick={() => setOwnerStatusFilter(["LE / REM"])} iconColor="#f59e0b" />
             </div>
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>PA TAGS</div>
+            </>)}
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("PA TAGS")) next.delete("PA TAGS");
+                else next.add("PA TAGS");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("PA TAGS") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>PA TAGS</span>
+            </button>
+            {!collapsedSections.has("PA TAGS") && (<>
             <div className="space-y-1">
               <SidebarItem icon={Layers} label="All" count={totals.total} active={paTagFilter.length === 0} onClick={() => setPaTagFilter([])} iconColor="#64748b" />
               <SidebarItem icon={UserCircle} label="Senior" count={totals.byPaTag["Senior"]} active={paTagFilter.includes("Senior")} onClick={() => setPaTagFilter(["Senior"])} iconColor="#0891b2" />
               <SidebarItem icon={UserCircle} label="Widow/Widower ★" count={totals.byPaTag["Widow/Widower"]} active={paTagFilter.includes("Widow/Widower")} onClick={() => setPaTagFilter(["Widow/Widower"])} iconColor="#7c3aed" />
               <SidebarItem icon={Receipt} label="Homestead Penalty ★" count={totals.byPaTag["Homestead Penalty"]} active={paTagFilter.includes("Homestead Penalty")} onClick={() => setPaTagFilter(["Homestead Penalty"])} iconColor="#dc2626" />
             </div>
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>ABSENTEE OWNER</div>
+            </>)}
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("ABSENTEE OWNER")) next.delete("ABSENTEE OWNER");
+                else next.add("ABSENTEE OWNER");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("ABSENTEE OWNER") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>ABSENTEE OWNER</span>
+            </button>
+            {!collapsedSections.has("ABSENTEE OWNER") && (<>
             <div className="space-y-1">
               <SidebarItem icon={Layers} label="All" count={totals.total} active={absenteeFilter.length === 0} onClick={() => setAbsenteeFilter([])} iconColor="#64748b" />
               <SidebarItem icon={MapPin} label="Any Absentee" count={totals.byAbsentee.Any} active={absenteeFilter.includes("Any")} onClick={() => setAbsenteeFilter(["Any"])} iconColor="#0891b2" />
@@ -5749,17 +5835,47 @@ export default function MiamiDadePropertyIntel() {
               <SidebarItem icon={MapPin} label="In State" count={totals.byAbsentee["In State"]} active={absenteeFilter.includes("In State")} onClick={() => setAbsenteeFilter(["In State"])} iconColor="#f59e0b" />
               <SidebarItem icon={MapPin} label="In County" count={totals.byAbsentee["In County"]} active={absenteeFilter.includes("In County")} onClick={() => setAbsenteeFilter(["In County"])} iconColor="#94a3b8" />
             </div>
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>DEED & FINANCIAL EVENTS</div>
+            </>)}
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("DEED & FINANCIAL EVENTS")) next.delete("DEED & FINANCIAL EVENTS");
+                else next.add("DEED & FINANCIAL EVENTS");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("DEED & FINANCIAL EVENTS") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>DEED & FINANCIAL EVENTS</span>
+            </button>
+            {!collapsedSections.has("DEED & FINANCIAL EVENTS") && (<>
             <div className="space-y-1">
               <SidebarItem icon={FileText} label="Possible Partial Int ★" count={totals.possiblePiCount} active={possiblePiFilter} onClick={() => setPossiblePiFilter(!possiblePiFilter)} iconColor="#dc2626" />
               <SidebarItem icon={Receipt} label="Possible PACE ★" count={totals.possiblePaceCount} active={possiblePaceFilter} onClick={() => setPossiblePaceFilter(!possiblePaceFilter)} iconColor="#d97706" />
               <SidebarItem icon={Landmark} label="Reverse Mortgage" count={totals.reverseMortgageCount} active={reverseMortgageFilter} onClick={() => setReverseMortgageFilter(!reverseMortgageFilter)} iconColor="#7c3aed" />
             </div>
+            </>)}
 
             {/* RECENTLY IMPORTED — only render when at least one lead has an importSource */}
             {Object.values(totals.importSourceCounts || {}).some((c) => c > 0) && (
               <>
-                <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>RECENTLY IMPORTED</div>
+                {/* Section collapse: chevron toggle */}
+                <button
+                  onClick={() => setCollapsedSections((prev) => {
+                    const next = new Set(prev);
+                    if (next.has("RECENTLY IMPORTED")) next.delete("RECENTLY IMPORTED");
+                    else next.add("RECENTLY IMPORTED");
+                    return next;
+                  })}
+                  className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+                  style={{ color: "#64748b" }}
+                >
+                  {collapsedSections.has("RECENTLY IMPORTED") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  <span>RECENTLY IMPORTED</span>
+                </button>
+                {!collapsedSections.has("RECENTLY IMPORTED") && (<>
                 <div className="space-y-1">
                   {Object.entries(IMPORT_SCHEMAS).map(([key, schema]) => {
                     const count = totals.importSourceCounts?.[key] || 0;
@@ -5783,10 +5899,25 @@ export default function MiamiDadePropertyIntel() {
                     );
                   })}
                 </div>
+                </>)}
               </>
             )}
 
-            <div className="text-[11px] font-bold tracking-wider mt-8 mb-3" style={{ color: "#64748b" }}>MLS STATUS</div>
+            {/* Section collapse: chevron toggle */}
+            <button
+              onClick={() => setCollapsedSections((prev) => {
+                const next = new Set(prev);
+                if (next.has("MLS STATUS")) next.delete("MLS STATUS");
+                else next.add("MLS STATUS");
+                return next;
+              })}
+              className="w-full flex items-center gap-2 text-[11px] font-bold tracking-wider mt-8 mb-3"
+              style={{ color: "#64748b" }}
+            >
+              {collapsedSections.has("MLS STATUS") ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>MLS STATUS</span>
+            </button>
+            {!collapsedSections.has("MLS STATUS") && (<>
             <div className="space-y-1">
               <SidebarItem icon={Layers} label="All" count={totals.total} active={mlsFilter.length === 0 && !activeDomFilter} onClick={() => { setMlsFilter([]); setActiveDomFilter(false); }} iconColor="#64748b" />
               <SidebarItem icon={Flame} label="Expired ★" count={totals.byMls.Expired} active={mlsFilter.includes("Expired") && !activeDomFilter} onClick={() => { setMlsFilter(["Expired"]); setActiveDomFilter(false); }} iconColor="#dc2626" />
@@ -5797,6 +5928,7 @@ export default function MiamiDadePropertyIntel() {
               <SidebarItem icon={Receipt} label="Pending" count={totals.byMls.Pending} active={mlsFilter.includes("Pending") && !activeDomFilter} onClick={() => { setMlsFilter(["Pending"]); setActiveDomFilter(false); }} iconColor="#7c3aed" />
               <SidebarItem icon={Database} label="Off-Market" count={totals.byMls["Off-Market"]} active={mlsFilter.includes("Off-Market") && !activeDomFilter} onClick={() => { setMlsFilter(["Off-Market"]); setActiveDomFilter(false); }} iconColor="#94a3b8" />
             </div>
+            </>)}
           </div>
 
           {/* MAIN COLUMN */}
