@@ -6483,6 +6483,7 @@ export default function MiamiDadePropertyIntel() {
                     className="ml-1 px-2 py-1 rounded border bg-white text-sm font-bold"
                     style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
                   >
+                    <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={25}>25</option>
                     <option value={50}>50</option>
