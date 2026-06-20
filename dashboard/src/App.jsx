@@ -4271,6 +4271,7 @@ export default function MiamiDadePropertyIntel() {
   const [activeType, setActiveType] = useState([]);  // array of lead-type keys
   const [typeTagIntersection, setTypeTagIntersection] = useState(null); // { type, tag } | null — single-value drill-down
   const [expandedFamilies, setExpandedFamilies] = useState(new Set()); // Set of family names currently expanded in sidebar (collapse/expand UX)
+  const [collapsedSections, setCollapsedSections] = useState(new Set(["JURISDICTION","CODE VIOLATIONS","PROPERTY CONDITION","OWNER STATUS","PA TAGS","ABSENTEE OWNER","DEED & FINANCIAL EVENTS","RECENTLY IMPORTED","MLS STATUS"])); // Set of section names currently collapsed in sidebar (default: all 9 collapsible sections start collapsed)
   const [conditionTagFilter, setConditionTagFilter] = useState(null);
   const [scoreFilter, setScoreFilter] = useState([]);
   const [mlsFilter, setMlsFilter] = useState([]);
