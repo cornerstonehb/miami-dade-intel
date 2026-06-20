@@ -5502,8 +5502,8 @@ export default function MiamiDadePropertyIntel() {
                           </button>
                         );
                       })}
-                      {/* Intersection sub-rows — indented, smaller text, marked with ◦ */}
-                      {familyIntersections.map((it) => {
+                      {/* Intersection sub-rows — indented, smaller text, marked with ◦ — only render when family is expanded */}
+                      {expandedFamilies.has(family) && familyIntersections.map((it) => {
                         const isActive = typeTagIntersection?.type === it.type && (
                           it.probateStatus ? typeTagIntersection?.probateStatus === it.probateStatus
                           : it.outcome ? typeTagIntersection?.outcome === it.outcome
