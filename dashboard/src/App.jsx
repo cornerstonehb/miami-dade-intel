@@ -5566,17 +5566,43 @@ export default function MiamiDadePropertyIntel() {
                 const blockIntersections = LEAD_TYPE_TAG_INTERSECTIONS.filter(
                   (it) => it.parentFamily === block.name
                 );
+                const isExpanded = expandedFamilies.has(block.name);
+                const isActive = activeType.includes(block.name) && !typeTagIntersection;
+                const Chevron = isExpanded ? ChevronDown : ChevronRight;
+                const Icon = block.icon;
                 return (
                   <React.Fragment key={block.name}>
-                    <SidebarItem
-                      icon={block.icon}
-                      label={block.name}
-                      count={totals.byListType[block.name] || 0}
-                      active={activeType.includes(block.name) && !typeTagIntersection}
-                      onClick={() => { setActiveType([block.name]); setTypeTagIntersection(null); }}
-                      iconColor={block.color}
-                    />
-                    {block.tiers && block.tiers.map((tier) => {
+                    {/* Lien parent row: chevron + filter toggle. Click does both:
+                        toggle expand AND apply/clear filter (symmetric undo). */}
+                    <button
+                      onClick={() => {
+                        const willBeActive = !isActive;
+                        setExpandedFamilies((prev) => {
+                          const next = new Set(prev);
+                          if (willBeActive) next.add(block.name);
+                          else next.delete(block.name);
+                          return next;
+                        });
+                        if (willBeActive) {
+                          setActiveType([block.name]);
+                          setTypeTagIntersection(null);
+                        } else {
+                          setActiveType([]);
+                          setTypeTagIntersection(null);
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition"
+                      style={{
+                        background: isActive ? "#2563eb" : "transparent",
+                        color: isActive ? "white" : "#334155",
+                      }}
+                    >
+                      <Chevron className="w-3.5 h-3.5" style={{ color: isActive ? "white" : "#94a3b8" }} />
+                      <Icon className="w-4 h-4" style={{ color: isActive ? "white" : (block.color || "#64748b") }} />
+                      <span className="flex-1 text-left">{block.name}</span>
+                      <span className="text-xs font-bold opacity-80">{fmtCount(totals.byListType[block.name] || 0)}</span>
+                    </button>
+                    {isExpanded && block.tiers && block.tiers.map((tier) => {
                       const tierActive = typeTagIntersection?.type === block.name
                         && typeTagIntersection?.tier === tier
                         && typeTagIntersection?.tag == null;
@@ -5623,7 +5649,7 @@ export default function MiamiDadePropertyIntel() {
                         </React.Fragment>
                       );
                     })}
-                    {!block.tiers && blockIntersections.map((it) => {
+                    {isExpanded && !block.tiers && blockIntersections.map((it) => {
                       const isActive = typeTagIntersection?.type === it.type
                         && typeTagIntersection?.tag === it.tag;
                       return (
