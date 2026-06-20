@@ -13,6 +13,7 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Layers,
   Star,
   X,
@@ -4269,6 +4270,7 @@ export default function MiamiDadePropertyIntel() {
   // the modal Stack Filters panel TOGGLES (compose multi-value sets).
   const [activeType, setActiveType] = useState([]);  // array of lead-type keys
   const [typeTagIntersection, setTypeTagIntersection] = useState(null); // { type, tag } | null — single-value drill-down
+  const [expandedFamilies, setExpandedFamilies] = useState(new Set()); // Set of family names currently expanded in sidebar (collapse/expand UX)
   const [conditionTagFilter, setConditionTagFilter] = useState(null);
   const [scoreFilter, setScoreFilter] = useState([]);
   const [mlsFilter, setMlsFilter] = useState([]);
