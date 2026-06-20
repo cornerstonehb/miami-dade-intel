@@ -6014,7 +6014,7 @@ export default function MiamiDadePropertyIntel() {
 
             {/* DATA TABLE */}
             <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
-              <div className="overflow-auto max-h-[70vh]">
+              <div className="overflow-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-[11px] font-bold tracking-wider" style={{ color: "white", borderBottom: "1px solid #1e40af" }}>
@@ -6483,6 +6483,7 @@ export default function MiamiDadePropertyIntel() {
                     className="ml-1 px-2 py-1 rounded border bg-white text-sm font-bold"
                     style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
                   >
+                    <option value={10}>10</option>
                     <option value={25}>25</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
