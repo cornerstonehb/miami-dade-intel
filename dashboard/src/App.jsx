@@ -4333,7 +4333,7 @@ export default function MiamiDadePropertyIntel() {
     }
   };
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(25);
   const [selectedLead, setSelectedLead] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -6473,7 +6473,20 @@ export default function MiamiDadePropertyIntel() {
               {/* PAGINATION */}
               <div className="flex items-center justify-between px-4 py-3 border-t" style={{ borderColor: "#e2e8f0", background: "#f8fafc" }}>
                 <div className="flex items-center gap-2 text-sm" style={{ color: "#475569" }}>
-                  Rows per page: <span className="font-bold">{pageSize}</span>
+                  Rows per page:
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    className="ml-1 px-2 py-1 rounded border bg-white text-sm font-bold"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                  >
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setPage(Math.max(1, page - 1))} className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-slate-200" style={{ color: "#475569" }}>
