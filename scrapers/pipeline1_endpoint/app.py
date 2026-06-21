@@ -303,6 +303,23 @@ def _parse_money(value: str) -> int:
 def _truthy_yes(value: str) -> bool:
     """Return True if a CSV cell is the YES sentinel (case-insensitive)."""
     return (value or "").strip().upper() == "YES"
+def _route_list_type(row: dict) -> str:
+    """
+    Route a Tax Default CSV row to the correct dashboard list type based on
+    Cert Status and Deed Status. Confirmed mappings (June 20, 2026):
+
+      * Deed Status = "Applied"  -> "Tax Deed"  (Tax Deed Case has been filed)
+      * Cert Status = "Issued" + Deed Status = "-- None --"  -> "Tax Default"
+      * Cert Status = "-- None --" + Deed Status = "-- None --"  -> "Tax Default"
+
+    All other combinations default to "Tax Default" (the safest fallback
+    pending clarification on Certified / Canceled At Bid Rate / standalone
+    Redeemed and Surrendered values).
+    """
+    deed = (row.get("Deed Status") or "").strip()
+    if deed == "Applied":
+        return "Tax Deed"
+    return "Tax Default"
 
 
 def parse_tax_default(text: str):
@@ -388,7 +405,7 @@ def parse_tax_default(text: str):
             # Provenance
             "listTypes": [
                 {
-                    "name": "Tax Default",
+                    "name": _route_list_type(row),
                     "source": "tax-collector-csv-cleaned",
                 }
             ],
